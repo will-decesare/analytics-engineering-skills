@@ -1,0 +1,4 @@
+interface:
+  display_name: "Analytics Engineering Workflow"
+  short_description: "Coordinate analytics work from ticket to PR"
+  default_prompt: "Use $analytics-engineer to coordinate this analytics ticket through development, independent validation, and a draft pull request."

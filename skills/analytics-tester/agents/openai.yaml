@@ -1,0 +1,4 @@
+interface:
+  display_name: "Analytics Tester"
+  short_description: "Validate analytics changes end to end"
+  default_prompt: "Use $analytics-tester to validate these analytics changes against production and test affected downstream models."
