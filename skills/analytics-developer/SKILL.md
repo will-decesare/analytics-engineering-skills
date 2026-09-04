@@ -1,12 +1,13 @@
 ---
 name: analytics-developer
-description: Implement and refactor production analytics transformations from work tickets, including SQL and dbt models, metadata, documentation, semantic contracts, and relevant tests. Use when Codex should act as the code-owning developer for an analytics ticket, follow repository modeling and SQL rules, prepare an isolated concurrent development environment, or drive a developer-to-tester repair loop before an analytics pull request.
+description: Implement and refactor production analytics transformations from work tickets, including SQL and dbt models, metadata, documentation, semantic contracts, and relevant tests. Use when Codex should act as the code-owning specialist for an analytics ticket, follow repository modeling and SQL rules, prepare an isolated concurrent development environment, or correct work returned by an analytics tester.
 ---
 
 # Analytics Developer
 
-Own the code change and repair loop. Translate a work ticket into a complete,
-grain-safe analytics implementation, then hand it to an independent tester.
+Own implementation and correction iterations. Translate a work ticket into a
+complete, grain-safe analytics change, then return a fingerprinted handoff to
+the analytics-engineer coordinator.
 
 ## Follow repository authority
 
@@ -53,25 +54,25 @@ before any warehouse-writing command when work can overlap another environment.
    compile, lint, and narrowly scoped non-destructive checks. Do not represent
    these checks as full development-versus-production validation.
 
-## Hand off to the tester
+## Hand off to the coordinator
 
 Prepare the Developer Handoff Packet defined in `agent-handoffs.md`. Include the
 ticket criteria, branch and worktree, code-state fingerprint, changed resources,
 model grains and keys, tests added, expected data changes, affected descendants,
 isolated environment, commands run, and remaining risks.
 
-When collaboration agents are available and the user requested the full
-workflow:
+When working inside the coordinated workflow:
 
-1. Start or notify a separate agent instructed to use `$analytics-tester`.
-2. Send the raw ticket context, repository path, and Developer Handoff Packet.
-3. Remain available while the tester validates the exact code state.
-4. If the tester returns `FAIL`, fix the reported code or test defects, update
-   the packet and fingerprint, increment the iteration, and return to testing.
-5. Repeat until the tester returns `PASS` or a genuine blocker requires user
-   input. Do not bypass the tester or send failed work to the deployer.
+1. Return the Developer Handoff Packet to `$analytics-engineer` with the state
+   `READY_FOR_TEST`.
+2. Remain available while the coordinator assigns the tester.
+3. If the coordinator returns a Tester Failure Packet, fix the reported code or
+   test defects, increment the iteration, update the fingerprint, and return a
+   new Developer Handoff Packet.
+4. Repeat until the coordinator reports `PASS` or a genuine blocker requires
+   user input.
 
-The tester owns the pass gate and the handoff to `$analytics-deployer`. If
-separate agents are unavailable, present the complete packet and clearly state
-that independent testing is the next required role; never silently certify your
-own implementation as tester-approved.
+Do not start the tester or deployer, bypass the coordinator, or certify your own
+implementation as tester-approved. When invoked directly for implementation
+only, return the packet to the user and identify `$analytics-engineer` or
+`$analytics-tester` as the next appropriate entry point.

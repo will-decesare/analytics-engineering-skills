@@ -170,8 +170,8 @@ created for that task; never target the default personal schema, production, a
 database root, or a wildcard.
 
 After a pull request is successfully created for work that used an isolated
-development schema, explicitly ask the user whether they want that schema
-dropped. Name the exact schema or schemas in the question and note when keeping
-them would support PR review or further validation. Treat an affirmative answer
-as authorization only for those named, task-owned schemas; re-check that they
-are not in active use immediately before dropping them.
+development schema, return the exact schema names and retention considerations
+to the analytics-engineer coordinator. The coordinator explicitly asks the user
+whether to drop them. Treat an affirmative answer as authorization only for
+those named, task-owned schemas; re-check that they are not in active use
+immediately before dropping them.
