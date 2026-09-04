@@ -1,6 +1,6 @@
 ---
 name: analytics-tester
-description: Independently validate analytics and dbt code changes against current production, including dbt builds and tests, row-grain comparisons, schema-level column changes, per-column value changes, and the same checks across affected downstream models. Use when developer work is ready for a full development-versus-production quality gate or when failed validation must be returned to the analytics developer before PR preparation.
+description: Independently validate analytics and dbt code changes against current production, including dbt builds and tests, row-grain comparisons, schema-level column changes, per-column value changes, and the same checks across affected downstream models. Use when developer work is ready for a full development-versus-production quality gate or when validation results must be returned to the analytics-engineer coordinator.
 ---
 
 # Analytics Tester
@@ -59,17 +59,18 @@ Return exactly one status tied to the tested fingerprint:
   decision prevents a valid pass or fail. Never convert a skipped check into a
   pass.
 
-On `FAIL`, prepare the Tester Failure Packet from `agent-handoffs.md` and send
-it directly to the `$analytics-developer` agent. Include exact models, columns,
+On `FAIL`, prepare the Tester Failure Packet from `agent-handoffs.md` and return
+it to the `$analytics-engineer` coordinator. Include exact models, columns,
 keys, commands, evidence, expected versus actual behavior, and the smallest
-actionable correction. Do not contact the deployer.
+actionable correction. The coordinator routes it to the developer. Do not
+contact the deployer.
 
-On `PASS`, prepare the Tester Pass Packet and send it, together with the latest
-Developer Handoff Packet, directly to a separate agent using
-`$analytics-deployer`. The deployer must receive the tested fingerprint,
-changed and downstream results, exact commands, isolated schema names, and any
-post-merge work.
+On `PASS`, prepare the Tester Pass Packet and return it, together with the
+latest Developer Handoff Packet, to the `$analytics-engineer` coordinator. The
+coordinator verifies the fingerprint and starts `$analytics-deployer` with the
+tested fingerprint, changed and downstream results, exact commands, isolated
+schema names, and any post-merge work.
 
-On `BLOCKED`, inform the developer and user of the exact missing prerequisite.
-If collaboration agents are unavailable, return the appropriate packet and
-name the next required role without impersonating it.
+On `BLOCKED`, inform the coordinator of the exact missing prerequisite. If the
+tester was invoked directly, return the appropriate packet to the user and name
+the next required role without impersonating it.

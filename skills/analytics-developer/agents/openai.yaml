@@ -1,4 +1,4 @@
 interface:
   display_name: "Analytics Developer"
   short_description: "Build tested analytics model changes"
-  default_prompt: "Use $analytics-developer to implement this analytics work ticket and coordinate validation through a draft PR."
+  default_prompt: "Use $analytics-developer to implement this analytics work ticket and return a fingerprinted handoff to the analytics-engineer coordinator."

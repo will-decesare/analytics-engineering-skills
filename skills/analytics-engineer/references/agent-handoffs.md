@@ -1,8 +1,9 @@
 # Analytics Agent Handoffs
 
-Use structured packets so each role acts on the same ticket and code state.
-Communicate directly between agents when collaboration tools are available; do
-not make the user relay routine status between roles.
+Use structured packets so each role acts on the same ticket and code state. All
+routine packets return to the analytics-engineer coordinator, which owns the
+workflow state and routes the next specialist. Do not make the user relay
+routine status between roles.
 
 ## Shared identity
 
@@ -32,7 +33,8 @@ Include:
 - developer commands and outcomes;
 - known risks, assumptions, unavailable checks, and post-merge work.
 
-Address it to the tester with the explicit state `READY_FOR_TEST`.
+Address it to the analytics-engineer coordinator with the explicit state
+`READY_FOR_TEST`. The coordinator verifies it before starting the tester.
 
 ## Tester Failure Packet
 
@@ -47,9 +49,9 @@ Include:
 - relevant log or artifact path;
 - smallest actionable correction, without editing the developer's code.
 
-Address it to the developer. The developer must acknowledge it, increment the
-iteration after a fix, issue a new fingerprint, and return a new Developer
-Handoff Packet.
+Address it to the analytics-engineer coordinator. The coordinator routes it to
+the developer, which must acknowledge it, increment the iteration after a fix,
+issue a new fingerprint, and return a new Developer Handoff Packet.
 
 ## Tester Pass Packet
 
@@ -67,7 +69,9 @@ Include:
 - downstream, semantic, metric, exposure, and BI validation;
 - limitations, cleanup candidates, and post-merge production checks.
 
-Address it to the deployer and attach the latest Developer Handoff Packet.
+Address it to the analytics-engineer coordinator and attach the latest
+Developer Handoff Packet. The coordinator verifies the fingerprint before
+starting the deployer.
 
 ## Deployer Completion Packet
 
@@ -80,19 +84,23 @@ Include:
 - CI or dbt job state, never implying pending checks passed;
 - remaining pre-merge and post-merge work;
 - exact isolated schemas still present;
-- whether the user has been asked about schema cleanup.
+- whether retaining those schemas supports review or additional validation;
+- whether the coordinator should ask the user about schema cleanup.
 
-Tell the user that the PR is ready for review only when the PR actually exists,
-the body has been verified, and all actions required by the authorized scope are
+Address it to the analytics-engineer coordinator. The coordinator tells the
+user that the PR is ready for review only when the PR actually exists, the body
+has been verified, and all actions required by the authorized scope are
 complete.
 
 ## Coordination rules
 
 - Keep the developer as the only role that edits implementation code.
 - Keep the tester read-only with respect to the implementation and PR state.
-- Start the deployer only after a current `PASS` packet exists.
-- On tester failure, return to development and repeat until pass or a genuine
-  blocker requires user input.
+- Let the analytics-engineer coordinator start every specialist and retain the
+  current ticket, fingerprint, validation result, and authorization scope.
+- Start the deployer only after the coordinator receives a current `PASS`.
+- On tester failure, have the coordinator return the packet to development and
+  repeat until pass or a genuine blocker requires user input.
 - Avoid simultaneous writes to one worktree or dbt artifact directory.
 - Report unavailable evidence and stale state; never fill packet fields with
   assumptions.

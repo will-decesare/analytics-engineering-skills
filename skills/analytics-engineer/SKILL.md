@@ -1,6 +1,6 @@
 ---
 name: analytics-engineer
-description: Coordinate a role-separated analytics engineering workflow across an analytics developer, independent tester, and pull-request deployer. Use for end-to-end SQL or dbt work tickets that must move from implementation and tests through full development-versus-production and downstream column validation, repair loops, and an evidence-backed draft pull request, or when routing work to one of the specialized analytics roles.
+description: Serve as the quarterback for a role-separated analytics engineering workflow across an analytics developer, independent tester, and pull-request deployer. Use as the default entry point for end-to-end SQL or dbt work tickets that must move from implementation and tests through full development-versus-production and downstream column validation, repair loops, and an evidence-backed draft pull request.
 ---
 
 # Analytics Engineering Workflow
@@ -10,41 +10,43 @@ integrity, and explicit authority for external actions.
 
 ## Route to the correct role
 
-- Use `$analytics-developer` to start a work ticket, implement or refactor
-  models, add tests, and own correction iterations.
+- Use `$analytics-engineer` as the default entry point for a new work ticket and
+  the owner of the end-to-end workflow.
+- Use `$analytics-developer` directly only for an implementation-only request
+  or to resume a developer phase outside a coordinated workflow.
 - Use `$analytics-tester` to validate an existing developer handoff against
   production, including changed columns and affected downstream models.
 - Use `$analytics-deployer` only after a current tester pass to prepare the PR
   body, validation comment, and authorized draft pull request.
 
-The preferred entry point for a new ticket is `$analytics-developer`. When this
-coordinator is invoked for the complete workflow, start a separate developer
-agent instructed to use `$analytics-developer` and supply the ticket and
-repository context.
+As quarterback, retain ownership of the ticket, current code fingerprint,
+validation status, authorization scope, and next role. Start each specialist,
+receive every handoff, and route the next action without requiring the user to
+coordinate agents.
 
 ## Run the workflow
 
-1. The developer reads the ticket and repository instructions, then implements
-   or refactors the required models, metadata, documentation, and tests.
-2. The developer completes parse, compile, and lint checks, records the exact
-   code fingerprint, and sends a Developer Handoff Packet to a separate tester.
-3. The tester uses `$analytics-tester` to build the isolated development state
-   and perform full development-versus-production validation on changed models
-   and all materially affected downstream models.
-4. The tester measures both schema-level column changes and per-column value
-   changes, in addition to row-grain comparisons, dbt tests, and business
+1. Read the work ticket and repository instructions, establish the workflow
+   identity and authorization scope, then start a separate agent using
+   `$analytics-developer`.
+2. Receive the Developer Handoff Packet, verify its code fingerprint and
+   `READY_FOR_TEST` state, then start a separate `$analytics-tester` agent.
+3. Have the tester build the isolated development state and perform full
+   development-versus-production validation on changed models and all
+   materially affected downstream models.
+4. Require both schema-level column comparisons and per-column value
+   comparisons, in addition to row-grain checks, dbt tests, and business
    invariants.
-5. On `FAIL`, the tester sends an actionable failure packet to the developer.
-   The developer fixes the code, increments the iteration, and returns it for a
-   complete retest. Repeat until `PASS` or a genuine blocker needs user input.
-6. On `PASS`, the tester sends the current Developer Handoff Packet and Tester
-   Pass Packet to a separate deployer using `$analytics-deployer`.
-7. The deployer verifies that the tested fingerprint is current, populates the
-   repository PR template and validation comment, performs only authorized Git
-   and GitHub actions, and creates a draft PR when authorized.
-8. After verifying the created PR, the deployer tells the user that it is ready
-   for review and asks whether the exact isolated development schemas should be
-   dropped.
+5. On `FAIL`, receive the Tester Failure Packet and route it to the developer.
+   After the fix, require a new fingerprint and complete retest. Repeat until
+   `PASS` or a genuine blocker needs user input.
+6. On `PASS`, verify the Tester Pass Packet matches the current fingerprint,
+   then start a separate agent using `$analytics-deployer` and supply both the
+   developer and tester packets.
+7. Receive the Deployer Completion Packet and verify the PR title, URL, base,
+   head, state, body, validation comment, and remaining checks.
+8. Tell the user that the PR is ready for review and ask whether the exact
+   isolated development schemas should be dropped.
 
 Read [agent-handoffs.md](references/agent-handoffs.md) for the required packets
 and communication protocol.
@@ -56,8 +58,10 @@ and communication protocol.
   PR state.
 - Do not let the deployer proceed without a tester `PASS` tied to the current
   code fingerprint.
-- Communicate directly between agents when collaboration tools are available;
-  do not require the user to relay normal handoffs.
+- Require every specialist to return its packet to the coordinator. The
+  coordinator starts or re-engages the next role and maintains workflow state.
+- Communicate directly with specialists when collaboration tools are
+  available; do not require the user to relay normal handoffs.
 - Avoid concurrent writes to the same worktree, schema, target directory, or
   log directory.
 - If separate agents are unavailable, execute the roles sequentially with

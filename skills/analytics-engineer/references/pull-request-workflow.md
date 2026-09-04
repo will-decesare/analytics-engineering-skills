@@ -198,11 +198,11 @@ samples cannot be posted safely.
 
 - Read the created PR back and verify its title, base, head, draft state, links,
   Markdown rendering, and checklist.
-- If the work used an isolated development schema, ask the user after the PR is
-  successfully created and verified whether they want the exact task-owned
-  schema or schemas dropped. Mention when retaining them would support review
-  or additional validation. Do not drop anything without explicit
-  authorization, and re-check active use before cleanup.
+- If the work used an isolated development schema, include the exact task-owned
+  schema names and retention considerations in the Deployer Completion Packet.
+  After the PR is successfully created and verified, the analytics-engineer
+  coordinator asks the user whether to drop them. Do not drop anything without
+  explicit authorization, and re-check active use before cleanup.
 - Inspect CI or dbt job status; do not claim success while checks are pending.
 - Add a validation comment only when it contributes new evidence. Prefer
   updating a previous bot/agent comment over creating repetitive comments when

@@ -13,10 +13,12 @@ production despite the role name.
 
 1. Read every applicable repository instruction file, contribution guide, CI
    workflow, deployment workflow, and pull-request template.
-2. Require both the latest Developer Handoff Packet and a Tester Pass Packet.
+2. Require both the latest Developer Handoff Packet and a Tester Pass Packet
+   from the `$analytics-engineer` coordinator.
 3. Verify that the tester's branch, commit, diff fingerprint, and validation
-   scope still match the current worktree. If anything material changed, send
-   the work back to `$analytics-tester`; do not use stale validation.
+   scope still match the current worktree. If anything material changed, return
+   the work to the coordinator for a new `$analytics-tester` pass; do not use
+   stale validation.
 4. Do not proceed from `FAIL`, `BLOCKED`, partial testing, or unexplained
    downstream differences.
 
@@ -54,14 +56,15 @@ head, draft state, links, rendered body, comment, and checks.
 
 ## Complete the handoff
 
-Prepare the Deployer Completion Packet defined in `agent-handoffs.md`. When an
-actual PR exists and is complete for the authorized scope, tell the user that
-the PR is ready for review and provide its URL, state, validation summary, and
-remaining work. If only local PR text was authorized, say that the draft
-content—not a PR—is ready.
+Prepare the Deployer Completion Packet defined in `agent-handoffs.md` and return
+it to the `$analytics-engineer` coordinator. When an actual PR exists and is
+complete for the authorized scope, the coordinator tells the user that the PR
+is ready for review and provides its URL, state, validation summary, and
+remaining work. If only local PR text was authorized, state clearly in the
+packet that draft content, rather than a PR, is ready.
 
 After successfully creating and verifying a PR that used isolated development
-schemas, ask the user whether they want the exact named schemas dropped. Note
-when retaining them would support review or additional validation. Never drop a
-schema automatically; re-check active use and require explicit authorization
-for each task-owned schema.
+schemas, include the exact schema names and retention considerations in the
+completion packet. The coordinator asks the user whether to drop them. Never
+drop a schema automatically; re-check active use and require explicit
+authorization for each task-owned schema.
