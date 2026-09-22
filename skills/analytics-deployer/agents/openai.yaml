@@ -1,4 +1,4 @@
 interface:
   display_name: "Analytics Deployer"
-  short_description: "Prepare evidence-backed analytics PRs"
-  default_prompt: "Use $analytics-deployer to prepare a draft pull request from the developer and tester handoffs."
+  short_description: "Prepare concise, evidence-backed analytics PRs"
+  default_prompt: "Use $analytics-deployer to prepare or update the PR description with concise validation results, without posting a separate comment."

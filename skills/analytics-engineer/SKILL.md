@@ -1,6 +1,6 @@
 ---
 name: analytics-engineer
-description: Serve as the quarterback for a role-separated analytics engineering workflow across an analytics developer, independent tester, and pull-request deployer. Use as the default entry point for end-to-end SQL or dbt work tickets that must move from implementation and tests through full development-versus-production and downstream column validation, repair loops, and an evidence-backed draft pull request.
+description: Coordinate analytics work tickets through development, changed-column validation, repair loops, and a concise evidence-backed PR. Use as the default analytics workflow entry point. Downstream data validation is opt-in; reporting deprecations require live content-impact checks.
 ---
 
 # Analytics Engineering Workflow
@@ -15,9 +15,12 @@ integrity, and explicit authority for external actions.
 - Use `$analytics-developer` directly only for an implementation-only request
   or to resume a developer phase outside a coordinated workflow.
 - Use `$analytics-tester` to validate an existing developer handoff against
-  production, including changed columns and affected downstream models.
+  production, testing only changed columns in directly changed models by
+  default. Include downstream data validation only when explicitly requested;
+  require live reporting-impact checks for deprecations as described below.
 - Use `$analytics-deployer` only after a current tester pass to prepare the PR
-  body, validation comment, and authorized draft pull request.
+  description with its validation summary and the authorized draft pull
+  request, or update that same description when the PR already exists.
 
 As quarterback, retain ownership of the ticket, current code fingerprint,
 validation status, authorization scope, and next role. Start each specialist,
@@ -36,30 +39,70 @@ fallback, and escalation rules; do not rely on default model inheritance to impl
 
 ## Run the workflow
 
+At intake, capture both the requested change and its motivation from the ticket
+or the user's explanation. If the reason is missing, ask the user for it early
+while continuing independent investigation. Do not invent a rationale or treat
+an implementation description as motivation. Carry the answer into the
+developer handoff and PR's Description and Motivation section.
+
 1. Read the work ticket and repository instructions, establish the workflow
    identity and authorization scope, then start a separate agent using
    `$analytics-developer`.
 2. Receive the Developer Handoff Packet, verify its code fingerprint and
-   `READY_FOR_TEST` state, then start a separate `$analytics-tester` agent.
+   `READY_FOR_TEST` state, and record the model/changed-column allowlist before
+   starting a separate `$analytics-tester` agent.
 3. Have the tester build the isolated development state and perform full
-   development-versus-production validation on changed models and all
-   materially affected downstream models.
-4. Require both schema-level column comparisons and per-column value
-   comparisons, in addition to row-grain checks, dbt tests, and business
-   invariants.
+   development-versus-production validation only for that allowlist. Do not
+   validate downstream data unless the user explicitly requests it. For
+   reporting deprecations, also require the live content-impact check below.
+4. Require schema and value comparisons and relevant tests for changed columns
+   only. Use stable keys for row alignment and minimal comparison-integrity
+   checks; exclude unchanged-column profiling and unrelated test suites.
+   For uncertain acceptance or logic-driven metric changes not explicitly
+   accepted by the user, ask with the observed impact and proposed explanation.
+   Continue independent work, but keep the affected validation gate unresolved.
 5. On `FAIL`, receive the Tester Failure Packet and route it to the developer.
-   After the fix, require a new fingerprint and complete retest. Repeat until
-   `PASS` or a genuine blocker needs user input.
+   After the fix, require a new fingerprint and retest the updated allowlist.
+   Repeat until `PASS` or a genuine blocker needs user input.
 6. On `PASS`, verify the Tester Pass Packet matches the current fingerprint,
    then start a separate agent using `$analytics-deployer` and supply both the
    developer and tester packets.
 7. Receive the Deployer Completion Packet and verify the PR title, URL, base,
-   head, state, body, validation comment, and remaining checks.
+   head, state, updated description, validation section, and remaining checks.
+   Confirm sourced motivation, acceptance decisions, and rendered Before/After
+   DAG images when required before reporting the PR ready for review.
+   Do not require a separate validation comment or comment URL.
 8. Tell the user that the PR is ready for review and ask whether the exact
    isolated development schemas should be dropped.
 
 Read [agent-handoffs.md](references/agent-handoffs.md) for the required packets
 and communication protocol.
+
+Read [full-validation.md](references/full-validation.md) to resolve scope.
+"Full validation" means complete validation within the changed-column
+allowlist, not all columns or descendants. Record unrequested downstream work
+as excluded by scope, not incomplete validation or a reason to block a PR.
+
+For reporting dependency deprecations, read
+[reporting-impact.md](references/reporting-impact.md). Have the developer map
+the retiring objects and the tester use relevant reporting APIs to find
+impacted saved visualizations, dashboards, and other content. This required
+dependency check does not authorize downstream data testing or content changes.
+Resolve unknown access/coverage and unaddressed breakage before accepting a
+retirement pass; do not waive the check merely because validation is light.
+
+Keep fingerprint verification and detailed evidence in internal handoffs.
+Require the deployer to maintain one concise validation summary in the original
+PR description, preserving unrelated content. New results, retests, and
+reporting-impact findings update that section in place; do not post separate
+"Validation update" comments unless the user explicitly requests a comment.
+Lead with parse/compile/run/test outcomes, then changed-column comparison
+tables and material metric differences with reasons and acceptance decisions.
+Only report downstream execution when explicitly requested and actually run.
+For DAG changes, require real before/after dbt Docs screenshots under
+[dag-screenshots.md](references/dag-screenshots.md).
+Exclude command dumps, JSON artifacts, hashes, and code-provenance narration
+from reviewer-facing text unless explicitly requested.
 
 ## Preserve role boundaries
 
@@ -84,8 +127,9 @@ Read every applicable repository instruction file before acting. Repository
 business definitions, modeling architecture, SQL style, dbt commands, PR
 template, and contribution workflow override portable defaults.
 
-Treat commits, pushes, comments, PR creation, readiness changes, merges,
-production runs, task-system updates, and schema deletion as distinct actions.
+Treat commits, pushes, PR-description updates, comments, PR creation, readiness
+changes, merges, production runs, task-system updates, and schema deletion as
+distinct actions.
 Honor authorization already explicit in the user's request; ask before an
 action that was not authorized. Never imply that a skipped validation passed.
 
