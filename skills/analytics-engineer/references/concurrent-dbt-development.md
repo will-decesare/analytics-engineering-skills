@@ -24,6 +24,12 @@ Schema isolation protects warehouse relations only. Also isolate:
 - logs with a unique `--log-path`;
 - production state artifacts from development output artifacts.
 
+Before creating a task branch/worktree, complete the
+[remote-main branch preflight](dbt-workflow.md#start-from-current-remote-main).
+Use the freshly verified remote-base tip as the starting point; a separate
+worktree does not by itself guarantee current code. Leave another task's
+dirty or active checkout untouched.
+
 Inspect repository instructions, `profiles.yml` guidance, custom schema macros,
 adapter support, grants, and cleanup policy before creating anything.
 
@@ -131,20 +137,36 @@ user authorizes the exact target.
 Repeat the same task schema and isolated paths for every command:
 
 ```text
-DBT_DEV_SCHEMA=<task-schema> dbt build --target dev \
-    --select <changed-model>+ \
+DBT_DEV_SCHEMA=<task-schema> dbt run --target dev \
+    --select <changed-model> \
     --state <environment-root>/prod-state \
     --target-path <environment-root>/dev-target \
-    --log-path <environment-root>/logs/build
+    --log-path <environment-root>/logs/run
+
+DBT_DEV_SCHEMA=<task-schema> dbt test --target dev \
+    --select <explicit-changed-column-test-nodes> \
+    --indirect-selection empty \
+    --state <environment-root>/prod-state \
+    --target-path <environment-root>/test-target \
+    --log-path <environment-root>/logs/test
 ```
+
+Resolve test node names from the project's manifest and inspect them before
+execution; the placeholder is not a dbt column selector. If no relevant test
+exists, use focused comparison queries. Do not fall back to a model-wide test
+selection. Use the project's supported flag syntax and add its deferral options
+when needed for unchanged parents. No trailing descendant selector is included:
+downstream models and columns are validated only when explicitly requested.
 
 Use the narrowest selector that proves the change. Confirm the resolved target
 before execution and verify afterward that every created relation belongs to
 the task namespace. Abort if a command resolves to the default personal schema
 or production unexpectedly.
 
-Run row-grain tests and development-versus-production comparisons against the
-task relation. Apply identical time and business predicates to both sides.
+Run development-versus-production comparisons only on allowlisted changed
+columns in the task relation. Use row keys for alignment and minimal integrity
+checks. Apply identical time and business predicates to both sides; do not
+profile unchanged columns or validate descendants by default.
 
 ## Validate and hand off
 

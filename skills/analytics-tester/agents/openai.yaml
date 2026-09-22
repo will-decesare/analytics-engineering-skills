@@ -1,4 +1,4 @@
 interface:
   display_name: "Analytics Tester"
-  short_description: "Validate analytics changes end to end"
-  default_prompt: "Use $analytics-tester to validate these analytics changes against production and test affected downstream models."
+  short_description: "Validate changed columns and reporting retirement impact"
+  default_prompt: "Use $analytics-tester to validate changed columns and any required live reporting-deprecation impact; keep downstream data testing opt-in."

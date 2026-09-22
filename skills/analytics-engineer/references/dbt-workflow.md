@@ -3,6 +3,7 @@
 ## Contents
 
 - [Discover the project contract](#discover-the-project-contract)
+- [Start from current remote main](#start-from-current-remote-main)
 - [Design the change](#design-the-change)
 - [Implement all resources together](#implement-all-resources-together)
 - [Isolate concurrent development](#isolate-concurrent-development)
@@ -22,6 +23,56 @@
   seeds, snapshots, semantic models, metrics, exposures, and downstream refs.
 - Check for a linked task or specification and preserve its identifier in branch
   or PR metadata only when the user requests those git operations.
+- Capture the motivation separately from the requested implementation. If the
+  ticket and user messages do not explain why, ask through the coordinator
+  while continuing independent work; do not invent the PR rationale.
+
+## Start from current remote main
+
+Before creating any task branch from a production base, including a branch in
+a new worktree, the developer must verify that the local starting point is
+current with the remote. Apply this independently in every affected repository
+(for example, dbt and its companion BI repository).
+
+1. Resolve the authoritative remote and base branch from repository guidance
+   and Git configuration. Default to `main`; honor an explicitly selected
+   production/release base. Do not assume a fork's `origin` is authoritative
+   when the project uses a different upstream. Ask if the choice is ambiguous.
+2. Inspect working-tree status and `git worktree list` before switching or
+   updating a local branch. Fetch the selected remote base immediately before
+   branching; do not trust a cached remote-tracking ref or an old "up to date"
+   status. A targeted fetch can use
+   `git fetch <remote> refs/heads/<base>:refs/remotes/<remote>/<base>`.
+   If fetching fails or the remote base is missing, stop branch creation and
+   report the blocker rather than proceeding from stale local state.
+3. Compare the local base and fetched remote base, including their exact tips
+   and ahead/behind counts. For example,
+   `git rev-list --left-right --count <base>...<remote>/<base>` reports
+   local-only commits first and remote-only commits second.
+4. If the tips match, the base is current. If local is only behind, update it
+   with `git merge --ff-only <remote>/<base>` in its clean, safely available
+   base-branch checkout, then verify both tips match. Never run that update on
+   the current feature branch by accident. If local is ahead or diverged, stop
+   and ask how to handle its local-only commits; do not silently include them,
+   create a merge commit, rebase, reset, or force-update the base.
+5. Preserve uncommitted changes and other tasks' checkouts. If a behind/equal
+   base checkout is dirty or in active use, create the new task's isolated
+   worktree directly from the freshly fetched remote-base tip instead of
+   updating that checkout. The same option applies when no local base branch
+   exists. Report that the task starts from current remote code while the
+   other local checkout was left unchanged; do not claim it was synchronized.
+   If isolation is unavailable, ask before proceeding. Do not stash, discard,
+   or carry unrelated edits into the new branch automatically.
+6. Create the branch using the verified tip as an explicit starting point,
+   not an arbitrary current `HEAD`. Check the new branch's initial `HEAD`
+   equals that tip before editing. Record remote, base, fetch time, comparison
+   outcome, and starting commit in the internal Developer Handoff Packet.
+
+Repeat the fetch/check for each new branch, but do not recreate or reset an
+existing feature branch when resuming work. This preflight does not authorize
+rebasing, merging, or refreshing already-tested feature code; such changes
+must follow the normal authorization and revalidation workflow. Keep branch
+provenance details out of routine PR comments.
 
 ## Design the change
 
@@ -61,46 +112,60 @@ personal schema.
 
 ## Validate by environment and row
 
-Use exact commands documented by the repository.
+Use exact commands documented by the repository with the changed-column scope
+defined in [full-validation.md](full-validation.md). Full validation covers
+changed columns in directly changed models; downstream data validation
+requires an explicit request. Reporting deprecations additionally require the
+live content-impact check below. Apply the same data-testing boundary to
+development and any authorized post-deployment checks.
 
 ### Development validation
 
-1. Parse or compile the changed selector and lint modified SQL and YAML.
+1. Parse the project, compile the changed selector, and lint modified SQL and
+   YAML. Record separate parse/compile outcomes and their actual scopes.
 2. Preserve a readable production baseline for each changed model. Clone or
    defer unchanged production parents into the task-specific development
    environment when supported, then rebuild only the changed selector and
    required parents.
-3. Run targeted model, relationship, and custom data tests in development.
+3. Run only test nodes asserting the allowlisted changed columns. Inspect the
+   resolved selector to avoid unchanged-column and downstream tests. Prefer
+   separate model runs and explicitly selected tests over a whole-model suite.
 4. Compare the development relation with the current production relation at
    the model's declared unique key:
    - limit both sides to the same time and business scope;
-   - compare shared columns with null-safe equality;
+   - compare only allowlisted changed columns with null-safe equality;
    - use explicit tolerances only for columns whose numeric behavior warrants
      them;
    - exclude or normalize nondeterministic audit columns deliberately;
    - use a full outer join to classify development-only, production-only,
-     changed, and exact-match keys;
+     changed, and matching keys on the selected columns, not whole rows;
    - report category counts and inspect representative rows from each material
      difference class.
-5. Reconcile row counts, uniqueness, null rates, and additive measures. Validate
-   newly introduced columns separately when they have no production analogue.
-6. Build affected children or validate BI contracts when the interface changed.
+5. Use row counts and key uniqueness as needed to support a valid comparison.
+   Check null rates and measures only for selected columns. Validate added
+   columns separately when they have no production analogue.
+6. Build or data-test downstream models, columns, or BI consumers only when
+   explicitly requested. Otherwise record them as outside data-validation
+   scope; this does not exclude required reporting-deprecation impact checks.
 
-A comparison need not produce zero differences. Connect expected differences
-to the requested business change and investigate every unexplained material
-difference. Avoid comparing a development-only rolling window with full
-production history; apply the same predicate to both relations.
+A comparison need not produce zero differences. Follow
+[difference acceptance](full-validation.md#accept-or-escalate-differences):
+demonstrate rounding/freshness causes, obtain explicit user acceptance for
+logic-driven metric changes, and ask when uncertain. An explained difference
+is not automatically accepted. Avoid comparing a development-only rolling
+window with full production history; apply the same predicate to both relations.
 
 ### Production validation
 
 After an authorized deployment through the repository's normal orchestration:
 
-1. run targeted production tests and grain checks;
-2. verify key uniqueness, row counts, null rates, and business invariants on the
-   deployed relation;
-3. compare affected rows and measures with an approved expected result or a
-   captured pre-deployment baseline;
-4. smoke-test affected downstream models, dashboards, or applications;
+1. run production tests targeting the changed-column allowlist;
+2. use keys to align rows and check nulls or business invariants only for
+   selected columns;
+3. compare those columns with the approved expected results or captured
+   pre-deployment baseline;
+4. smoke-test downstream models, columns, dashboards, or applications only
+   when explicitly requested;
 5. complete or report any documented full refresh, object removal, backfill, or
    communication task.
 
@@ -117,10 +182,14 @@ Never substitute successful compilation for successful data validation.
 
 When deleting or deprecating a model:
 
+- when it is a reporting dependency, follow
+  [reporting-impact.md](reporting-impact.md) and use relevant reporting APIs to
+  check live dashboards, visualizations, and other saved content;
 - find every `ref()`, test, schema entry, docs block, semantic model, metric,
   exposure, selector, macro assumption, and BI reference;
 - remove active metadata that would keep the model in docs or lineage;
-- migrate or remove downstream consumers;
+- migrate or remove in-scope repository consumers; seek authorization before
+  modifying hosted reporting content and report outstanding migration work;
 - preserve the retired SQL's formatting and history unless a rewrite is part of
   the request;
 - verify that parsing no longer exposes stale active resources.
@@ -130,7 +199,10 @@ When deleting or deprecating a model:
 - Explain why the chosen layer owns the logic and how grain is preserved.
 - Describe compatibility, backfill, migration-boundary, and downstream BI
   effects.
-- List exact validation commands and results.
+- Keep exact validation commands and results in the internal handoff; summarize
+  reviewer-relevant findings in the PR without hashes or artifact dumps.
+- Preserve the before-state DAG and capture actual dbt Docs before/after
+  screenshots for dependency changes under [dag-screenshots.md](dag-screenshots.md).
 - Read [pull-request-workflow.md](pull-request-workflow.md), then use the
   repository PR template and target branch when asked to comment or open a PR.
 - Do not commit, push, open a PR, deploy, or update task systems unless the user

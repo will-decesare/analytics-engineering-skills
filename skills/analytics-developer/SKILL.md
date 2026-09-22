@@ -9,6 +9,12 @@ Own implementation and correction iterations. Translate a work ticket into a
 complete, grain-safe analytics change, then return a fingerprinted handoff to
 the analytics-engineer coordinator.
 
+In a coordinated workflow, use the strong implementation default in
+[model-routing.md](../analytics-engineer/references/model-routing.md) for both
+development and repairs. Request routine evidence collection through the
+coordinator only when it can run independently; retain business definitions,
+architecture, SQL decisions, and code changes in this role.
+
 ## Follow repository authority
 
 1. Read every applicable repository instruction file, including `AGENTS.md`
@@ -34,8 +40,17 @@ before any warehouse-writing command when work can overlap another environment.
 
 ## Develop the ticket
 
-1. Extract the acceptance criteria, requested behavior, exclusions, and
-   expected result changes from the ticket.
+Before creating a task branch or worktree from a production branch, complete
+[Start from current remote main](../analytics-engineer/references/dbt-workflow.md#start-from-current-remote-main).
+Fetch and compare the local base with remote `main` (or the explicitly selected
+production base). Fast-forward a clean, behind-only base; never branch from a
+stale cached ref or silently include local-only commits. Preserve dirty or
+concurrently used worktrees, and record the verified branch point internally.
+
+1. Extract the motivation, acceptance criteria, requested behavior, exclusions,
+   and expected result changes from the ticket and user messages. If the
+   motivation is missing, have the coordinator ask the user (or ask directly
+   when working standalone); continue independent work without inventing it.
 2. Inspect the target model, parents, descendants, metadata, tests, metrics,
    exposures, documentation, and downstream BI contracts.
 3. Define each changed model's purpose, exact grain, stable key, source
@@ -54,12 +69,36 @@ before any warehouse-writing command when work can overlap another environment.
    compile, lint, and narrowly scoped non-destructive checks. Do not represent
    these checks as full development-versus-production validation.
 
+Identify changed output columns from the ticket and diff for each directly
+changed model. Add or update tests for those columns and retain unrelated
+existing tests. When running tests, select only assertions on the changed
+columns, with minimal key checks needed for comparison. Do not perform
+downstream data validation unless explicitly requested; reading lineage and
+updating contract documentation do not imply such a request.
+
+For reporting dependency deprecations, read
+[reporting-impact.md](../analytics-engineer/references/reporting-impact.md).
+Map the retiring objects to reporting tools and exact semantic identifiers for
+the tester's required live API check. Local reference searches cannot prove
+that saved dashboards or visualizations are unused. Use reported impact to
+plan authorized migrations; do not silently remove hosted content.
+
+When the change alters model dependencies, preserve the before-state docs or
+an isolated base checkout for the tester's
+[DAG screenshots](../analytics-engineer/references/dag-screenshots.md).
+Do not switch or reset an active checkout to obtain the baseline.
+
 ## Hand off to the coordinator
 
 Prepare the Developer Handoff Packet defined in `agent-handoffs.md`. Include the
 ticket criteria, branch and worktree, code-state fingerprint, changed resources,
-model grains and keys, tests added, expected data changes, affected descendants,
-isolated environment, commands run, and remaining risks.
+model grains and keys, tests added, expected data changes, the model-to-column
+allowlist, isolated environment, commands run, and remaining risks. Record any
+downstream validation request separately; otherwise mark it not requested.
+Record reporting deprecations and their required live impact check separately
+from that optional downstream data-validation scope.
+Include the user-grounded motivation and its source, explicitly accepted metric
+behavior changes, and the DAG baseline identity when dependencies changed.
 
 When working inside the coordinated workflow:
 
