@@ -21,6 +21,10 @@
   CI workflows, deployment workflow, and task-management conventions.
 - Use the configured base branch. If none is documented, default to the
   repository's default branch.
+- Before creating a new branch from a production base, complete the
+  [remote-main preflight](dbt-workflow.md#start-from-current-remote-main).
+  Fetch and verify the starting tip before branching, not only at PR creation.
+  Do not refresh or rewrite an already-tested feature branch automatically.
 - Follow local branch naming. If no convention exists, use a concise
   `feat/`, `fix/`, or `refactor/` name that matches the change type.
 - Link the issue, task, specification, or prior PR when one exists. Preserve its

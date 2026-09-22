@@ -40,6 +40,13 @@ before any warehouse-writing command when work can overlap another environment.
 
 ## Develop the ticket
 
+Before creating a task branch or worktree from a production branch, complete
+[Start from current remote main](../analytics-engineer/references/dbt-workflow.md#start-from-current-remote-main).
+Fetch and compare the local base with remote `main` (or the explicitly selected
+production base). Fast-forward a clean, behind-only base; never branch from a
+stale cached ref or silently include local-only commits. Preserve dirty or
+concurrently used worktrees, and record the verified branch point internally.
+
 1. Extract the motivation, acceptance criteria, requested behavior, exclusions,
    and expected result changes from the ticket and user messages. If the
    motivation is missing, have the coordinator ask the user (or ask directly

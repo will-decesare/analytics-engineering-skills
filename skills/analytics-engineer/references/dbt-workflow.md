@@ -3,6 +3,7 @@
 ## Contents
 
 - [Discover the project contract](#discover-the-project-contract)
+- [Start from current remote main](#start-from-current-remote-main)
 - [Design the change](#design-the-change)
 - [Implement all resources together](#implement-all-resources-together)
 - [Isolate concurrent development](#isolate-concurrent-development)
@@ -25,6 +26,53 @@
 - Capture the motivation separately from the requested implementation. If the
   ticket and user messages do not explain why, ask through the coordinator
   while continuing independent work; do not invent the PR rationale.
+
+## Start from current remote main
+
+Before creating any task branch from a production base, including a branch in
+a new worktree, the developer must verify that the local starting point is
+current with the remote. Apply this independently in every affected repository
+(for example, dbt and its companion BI repository).
+
+1. Resolve the authoritative remote and base branch from repository guidance
+   and Git configuration. Default to `main`; honor an explicitly selected
+   production/release base. Do not assume a fork's `origin` is authoritative
+   when the project uses a different upstream. Ask if the choice is ambiguous.
+2. Inspect working-tree status and `git worktree list` before switching or
+   updating a local branch. Fetch the selected remote base immediately before
+   branching; do not trust a cached remote-tracking ref or an old "up to date"
+   status. A targeted fetch can use
+   `git fetch <remote> refs/heads/<base>:refs/remotes/<remote>/<base>`.
+   If fetching fails or the remote base is missing, stop branch creation and
+   report the blocker rather than proceeding from stale local state.
+3. Compare the local base and fetched remote base, including their exact tips
+   and ahead/behind counts. For example,
+   `git rev-list --left-right --count <base>...<remote>/<base>` reports
+   local-only commits first and remote-only commits second.
+4. If the tips match, the base is current. If local is only behind, update it
+   with `git merge --ff-only <remote>/<base>` in its clean, safely available
+   base-branch checkout, then verify both tips match. Never run that update on
+   the current feature branch by accident. If local is ahead or diverged, stop
+   and ask how to handle its local-only commits; do not silently include them,
+   create a merge commit, rebase, reset, or force-update the base.
+5. Preserve uncommitted changes and other tasks' checkouts. If a behind/equal
+   base checkout is dirty or in active use, create the new task's isolated
+   worktree directly from the freshly fetched remote-base tip instead of
+   updating that checkout. The same option applies when no local base branch
+   exists. Report that the task starts from current remote code while the
+   other local checkout was left unchanged; do not claim it was synchronized.
+   If isolation is unavailable, ask before proceeding. Do not stash, discard,
+   or carry unrelated edits into the new branch automatically.
+6. Create the branch using the verified tip as an explicit starting point,
+   not an arbitrary current `HEAD`. Check the new branch's initial `HEAD`
+   equals that tip before editing. Record remote, base, fetch time, comparison
+   outcome, and starting commit in the internal Developer Handoff Packet.
+
+Repeat the fetch/check for each new branch, but do not recreate or reset an
+existing feature branch when resuming work. This preflight does not authorize
+rebasing, merging, or refreshing already-tested feature code; such changes
+must follow the normal authorization and revalidation workflow. Keep branch
+provenance details out of routine PR comments.
 
 ## Design the change
 

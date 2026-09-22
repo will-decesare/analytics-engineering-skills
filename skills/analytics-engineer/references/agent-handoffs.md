@@ -50,6 +50,10 @@ Include:
 - ticket acceptance criteria and exclusions;
 - motivation and its ticket/user source, or the pending motivation question;
 - explicitly user-accepted logic/metric changes and the behavior/scope covered;
+- branch preflight: authoritative remote/base, successful fetch time, local
+  ahead/behind result, update or isolation action, and verified starting tip;
+  when resuming an existing branch, preserve its original branch-point record
+  rather than claiming a new preflight occurred;
 - changed SQL, YAML, tests, docs, semantic resources, and BI contracts;
 - purpose, grain, stable key, materialization, and refresh behavior per model;
 - source ownership, join cardinalities, cutoffs, and null behavior;

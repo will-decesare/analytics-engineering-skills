@@ -24,6 +24,12 @@ Schema isolation protects warehouse relations only. Also isolate:
 - logs with a unique `--log-path`;
 - production state artifacts from development output artifacts.
 
+Before creating a task branch/worktree, complete the
+[remote-main branch preflight](dbt-workflow.md#start-from-current-remote-main).
+Use the freshly verified remote-base tip as the starting point; a separate
+worktree does not by itself guarantee current code. Leave another task's
+dirty or active checkout untouched.
+
 Inspect repository instructions, `profiles.yml` guidance, custom schema macros,
 adapter support, grants, and cleanup policy before creating anything.
 

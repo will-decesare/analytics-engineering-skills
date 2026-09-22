@@ -47,7 +47,10 @@ developer handoff and PR's Description and Motivation section.
 
 1. Read the work ticket and repository instructions, establish the workflow
    identity and authorization scope, then start a separate agent using
-   `$analytics-developer`.
+   `$analytics-developer`. Require the developer to complete the
+   [branch preflight](references/dbt-workflow.md#start-from-current-remote-main)
+   before creating a branch or worktree from a production base: fetch remote
+   `main`, compare the local base, and start from the verified current tip.
 2. Receive the Developer Handoff Packet, verify its code fingerprint and
    `READY_FOR_TEST` state, and record the model/changed-column allowlist before
    starting a separate `$analytics-tester` agent.
