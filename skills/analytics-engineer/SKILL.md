@@ -24,6 +24,16 @@ validation status, authorization scope, and next role. Start each specialist,
 receive every handoff, and route the next action without requiring the user to
 coordinate agents.
 
+## Select models for the work
+
+Read [model-routing.md](references/model-routing.md) before starting agents.
+Use its strong defaults for planning, development, and the independent tester,
+and its cheaper default for deployment. For bounded routine evidence collection
+requested by a specialist, launch an evidence worker with the shared default
+and route its evidence back to that specialist. The strong tester retains test
+design, interpretation, and the final gate. Apply the reference's launch,
+fallback, and escalation rules; do not rely on default model inheritance to implement this routing.
+
 ## Run the workflow
 
 1. Read the work ticket and repository instructions, establish the workflow

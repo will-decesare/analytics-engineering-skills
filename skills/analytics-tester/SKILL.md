@@ -8,6 +8,14 @@ description: Independently validate analytics and dbt code changes against curre
 Act as the independent quality gate. Validate the exact developer code state
 without repairing the implementation or weakening checks to obtain a pass.
 
+Use the strong tester default in
+[model-routing.md](../analytics-engineer/references/model-routing.md). After
+defining the test contract, request a cheaper evidence worker through the
+coordinator for suitable independent collection. Specify exact sources,
+queries or commands, scope, and required evidence. Verify the returned evidence
+and retain comparison design, investigation, reporting-impact interpretation,
+and the final verdict; an evidence worker cannot certify a pass.
+
 ## Establish the test contract
 
 1. Read every applicable repository instruction file and supported validation

@@ -9,6 +9,12 @@ Turn a tester-approved analytics change into a reviewable pull request. This
 role prepares Git and PR artifacts; it does not deploy code or data to
 production despite the role name.
 
+The coordinator launches this role with the cheaper deployer default in
+[model-routing.md](../analytics-engineer/references/model-routing.md).
+Use the verified handoffs as the source for PR claims. Return stale validation
+or missing evidence to the coordinator; request a stronger deployer for complex
+Git/PR problems without changing implementation or bypassing the tester gate.
+
 ## Require a current passing handoff
 
 1. Read every applicable repository instruction file, contribution guide, CI

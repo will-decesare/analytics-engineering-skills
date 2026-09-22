@@ -9,6 +9,12 @@ Own implementation and correction iterations. Translate a work ticket into a
 complete, grain-safe analytics change, then return a fingerprinted handoff to
 the analytics-engineer coordinator.
 
+In a coordinated workflow, use the strong implementation default in
+[model-routing.md](../analytics-engineer/references/model-routing.md) for both
+development and repairs. Request routine evidence collection through the
+coordinator only when it can run independently; retain business definitions,
+architecture, SQL decisions, and code changes in this role.
+
 ## Follow repository authority
 
 1. Read every applicable repository instruction file, including `AGENTS.md`

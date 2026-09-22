@@ -16,8 +16,16 @@ Every packet must include:
 - isolated schema names and dbt artifact/log paths;
 - authority already granted for commits, pushes, PRs, comments, and cleanup;
 - packet author role and timestamp.
+- requested model and reasoning effort, actual settings when exposed (otherwise
+  `not exposed`), and any model fallback or escalation with its reason.
 
 Do not reuse a pass packet after the fingerprint changes.
+
+For delegated routine evidence, include the worker's assignment, fingerprint,
+exact sources/commands, timestamps, scope and coverage, results, artifact paths,
+and unresolved issues. Return it through the coordinator to the requesting
+specialist under [model-routing.md](model-routing.md). This is supporting
+evidence, not a Tester Pass Packet; the tester retains the final verdict.
 
 ## Developer Handoff Packet
 

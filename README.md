@@ -44,3 +44,21 @@ routed back to the developer. After a passing tester handoff, the coordinator
 starts the deployer, verifies the resulting pull request, reports that it is
 ready for review, and asks whether isolated development schemas should be
 dropped.
+
+## Model routing
+
+Start the coordinator on the strong default in the shared routing policy.
+The workflow also uses strong models for development and independent testing,
+with cheaper models for bounded routine evidence collection and Git/PR
+preparation after a verified tester pass.
+The tester still designs checks, interprets evidence, and owns the verdict.
+Ambiguous evidence returns to a strong specialist; complex Git/PR work can
+escalate to a stronger deployer.
+
+These defaults are applied at agent launch, not through skill UI metadata.
+Explicit user model choices take precedence. Direct skill invocation retains
+the caller's model; unavailable model selection falls back with disclosure.
+Batch evidence work only when delegation is useful, since extra agents and
+retries can offset savings. See the shared
+[routing policy](skills/analytics-engineer/references/model-routing.md) for
+launch settings, role boundaries, and escalation rules.
