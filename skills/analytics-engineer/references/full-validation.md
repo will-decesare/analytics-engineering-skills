@@ -6,6 +6,7 @@
 - [Protect the comparison](#protect-the-comparison)
 - [Build and test development](#build-and-test-development)
 - [Compare changed columns](#compare-changed-columns)
+- [Explain differences by cause](#explain-differences-by-cause)
 - [Accept or escalate differences](#accept-or-escalate-differences)
 - [Downstream validation is opt-in](#downstream-validation-is-opt-in)
 - [Apply the quality gate](#apply-the-quality-gate)
@@ -106,6 +107,54 @@ in-scope evidence prevents a pass. A model with no changed output columns may
 need only static checks or materialization; record column comparisons as not
 applicable instead of choosing unchanged columns to test.
 
+## Explain differences by cause
+
+For material data differences, prepare a cause-based table for the PR's
+validation section. Compare the tested development result with the actual
+production output over the declared population, window, and selected columns.
+An earlier development iteration is not a production baseline. After a repair,
+recompute production comparisons rather than relabeling iteration-to-iteration
+counts. For a new model without a comparable production output, state that
+limit and report its applicable invariant checks; do not invent differences.
+
+Use these fields, with names adapted to the model and business keys:
+
+| Field | Required evidence |
+| --- | --- |
+| Change | The demonstrated cause of a distinct class of differences, rather than just "values changed." |
+| Description | How the selected output differs between production and development, including null transitions, added/removed records, or changed metric definitions. |
+| Accepted? | Accepted, rejected, or pending, with the reason and acceptance source under the rules below. |
+| Impact (unit) | A measured quantity with its unit, aggregation, and relevant scope explicitly defined. |
+| Example record key | A real, safe identifier belonging to that exact difference category. |
+| Example related entity key | The related order, customer, user, or other parent key from the same example record, when meaningful. |
+
+Choose impact measures that answer the business question at the declared
+grain. Examples include affected model rows, `count(distinct customer_id)`,
+`count(distinct user_id)`, distinct orders, or a monetary/quantity delta. Count
+stable comparison keys instead of multiplied join rows. Derive impact from
+the in-scope comparison; this format does not authorize unrelated column or
+downstream validation. For material measure changes, also retain production,
+development, and absolute/relative delta with units and window. A count of
+affected entities is not a substitute for the value of a material metric delta.
+
+When showing a changed-record total, classify each comparison key once using
+documented precedence or combine overlapping memberships before counting.
+Distinct customers/users can occur in multiple categories even when records
+do not: label that overlap and calculate the overall distinct count from the
+union, not the sum of per-category counts. Keep added/removed keys and freshness
+differences identifiable. Do not mix units or sum unrelated metrics into a
+single total. State the denominator for percentages and disclose sampling or
+approximation.
+
+Verify example identifiers and their related keys from the same row; do not
+pair a line ID with an order ID from another example. For aggregate models,
+use the actual grouping keys and reporting period rather than inventing a row ID. Keep exact category
+queries, memberships, metric definitions, and acceptance sources in the handoff
+so the deployer can publish the table without reconstructing the investigation.
+If a category has no safe record-level example, explain why instead of
+inventing one. Zero-difference or static-only validation can be summarized
+without a fabricated change table.
+
 ## Accept or escalate differences
 
 Classify each difference by cause and acceptance, separately from magnitude.
@@ -128,6 +177,13 @@ queries internally even when the PR only needs a short explanation.
   proposed cause, and decision needed. Standalone testers ask directly.
   Continue independent checks, but do not issue a pass for the unresolved
   scope. A known defect is `FAIL`; a pending acceptance decision is `BLOCKED`.
+
+In the table, distinguish a verified correction from accepted unresolved
+handling. An accepted null or excluded association can mean the evidence is
+insufficient; it does not prove the record belongs to another business class
+or that historical attribution is complete. Show pending decisions honestly
+rather than treating implementation intent or passing tests as acceptance.
+Honor acceptance already provided for the behavior and scope; do not ask again.
 
 Do not invent a universal percentage threshold for "negligible." For a
 negligible, accepted difference, the PR may say "<difference> is negligible

@@ -53,8 +53,12 @@ Read:
    question to the coordinator (ask directly when standalone); do not publish
    an invented reason or call the description complete.
 3. Follow the validation order in `pull-request-workflow.md`: concise
-   parse/compile/run/test outcomes, changed-column comparison tables, then
-   material key-metric differences with reasons and acceptance status. Omit
+   parse/compile/run/test outcomes, then the tester's cause-based production
+   comparison table: Change, Description, Accepted? with its reason, Impact in
+   the declared unit, example record ID, and related-entity IDs when meaningful.
+   Publish material metric values/deltas as well. Do not relabel an earlier
+   development comparison as production, invent examples, or sum overlapping
+   distinct-entity counts. Return missing evidence to the coordinator. Omit
    exact deltas for negligible accepted differences and state why they are
    accepted. Never infer acceptance of a logic-driven metric change. Include
    required live reporting-impact findings and actionable limitations.

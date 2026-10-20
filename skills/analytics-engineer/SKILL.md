@@ -99,8 +99,11 @@ Require the deployer to maintain one concise validation summary in the original
 PR description, preserving unrelated content. New results, retests, and
 reporting-impact findings update that section in place; do not post separate
 "Validation update" comments unless the user explicitly requests a comment.
-Lead with parse/compile/run/test outcomes, then changed-column comparison
-tables and material metric differences with reasons and acceptance decisions.
+Lead with parse/compile/run/test outcomes, then require production-comparison
+tables following [the cause-based format](references/full-validation.md#explain-differences-by-cause).
+Each cause needs its description, acceptance rationale, quantified impact in
+the relevant unit, and verified record/related-entity example IDs. Preserve
+material metric values and deltas as well as counts of affected entities.
 Only report downstream execution when explicitly requested and actually run.
 For DAG changes, require real before/after dbt Docs screenshots under
 [dag-screenshots.md](references/dag-screenshots.md).
