@@ -69,6 +69,13 @@ diff in the context of parent models, consumers, metadata, and local rules.
 - Are rounding/freshness explanations demonstrated? Did the user explicitly
   accept logic-driven metric changes, and were uncertain decisions escalated
   instead of treating a plausible explanation as approval?
+- Does the cause table compare development with actual production and include
+  Change, Description, Accepted? with a supported rationale, Impact in a defined
+  unit/aggregation, and verified example record/related-entity IDs?
+- Do cause counts reconcile at the stated grain, with overlapping distinct
+  customers/users totaled from their union rather than summed across causes?
+- Are unresolved associations distinguished from verified business-class
+  corrections, with acceptance supported by evidence and existing authority?
 - Are concise validation findings maintained in the original PR description,
   with no separate validation comment unless explicitly requested?
 - Were unrelated PR-description content and reviewer edits preserved, with

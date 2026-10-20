@@ -51,7 +51,11 @@ Perform all applicable checks in `full-validation.md`, including:
 - row-keyed dev/prod classification based on selected columns only;
 - schema comparisons and value profiles for allowlisted changed columns only;
 - downstream checks only for the explicitly requested model/column scope;
-- reconciliation of expected differences to ticket requirements.
+- reconciliation of expected differences to ticket requirements;
+- a cause-based production-comparison table with explicit impact units,
+  acceptance rationale/source, verified record and related-entity example IDs,
+  and reconciled totals under
+  [full-validation.md](../analytics-engineer/references/full-validation.md#explain-differences-by-cause).
 
 Use the same business and time scope on both sides. Stable keys may support row
 alignment and minimal integrity checks; do not profile unchanged outputs or
@@ -119,8 +123,9 @@ only when requested; otherwise state that they were not requested or performed.
 Include the required reporting-impact result separately for deprecations.
 Start the summary with separate parse, compile, run, and test outcomes and
 their actual scopes, including requested immediate-downstream checks only if
-performed. Supply changed-column tables, material metric comparisons with
-reasons, and acceptance sources. Keep negligible accepted differences concise
+performed. Supply the reviewer-ready cause table and material metric
+comparisons, including their production baseline, impact definitions, and
+acceptance sources. Keep negligible accepted differences concise
 in the PR summary while retaining exact values internally.
 
 On `BLOCKED`, inform the coordinator of the exact missing prerequisite. If the

@@ -104,9 +104,15 @@ Include:
 - selected-column value comparisons and type-specific profile deltas;
 - differences with demonstrated causes and acceptance status/source under
   [full-validation.md](full-validation.md#accept-or-escalate-differences);
-- reviewer-ready changed-column tables and large key-metric comparisons with
-  reasons; summarize negligible accepted differences without publishing exact
-  deltas, while preserving those values internally;
+- reviewer-ready production-to-development cause tables under
+  [full-validation.md](full-validation.md#explain-differences-by-cause): Change,
+  Description, Accepted? with rationale/source, Impact with its unit and
+  aggregation, a verified example record ID, and paired related-entity IDs;
+- category membership queries, overlap/precedence rules, denominators, and
+  reconciled totals (including union-based distinct-entity totals when needed);
+- material key-metric production/development values, deltas, and reasons;
+  summarize negligible accepted measure drift without publishing exact deltas,
+  while preserving those values internally;
 - new-model checks where no production relation exists;
 - downstream data-validation results only when explicitly requested; otherwise
   `not requested; not performed`, not an outstanding validation gap;

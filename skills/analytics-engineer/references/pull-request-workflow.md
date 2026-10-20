@@ -203,10 +203,14 @@ Keep prose concise without a rigid word or table limit. Use this order:
    downstream candidates. Report failures, skips, and warnings honestly. Say
    all scoped models compiled/ran/tested without failures only when evidence
    supports each claim. Parsing may be project-wide; report its actual scope.
-2. **Changed columns:** use tables to show production/development behavior and
-   the finding or reason. Group columns only when they share the same result.
-   For negligible accepted differences, omit numerical deltas and state that
-   the change is negligible and accepted because of the demonstrated reason.
+2. **Changed columns and causes:** summarize matches, then explain material
+   production-to-development differences using the cause-based table below.
+   Follow [full-validation.md](full-validation.md#explain-differences-by-cause)
+   for impact units, category totals, verified examples, and acceptance evidence.
+   Name the affected columns in the comparison scope or row descriptions;
+   group them only when their causes and results agree. Use production as the
+   baseline, not an earlier development iteration. For negligible accepted
+   metric drift, exact deltas may stay internal; state the demonstrated reason.
 3. **Large key-metric differences:** show production, development, the change,
    the cause, and acceptance status in a table. Preserve significant numbers
    even when accepted. Ask the user if acceptance is uncertain; logic-driven
@@ -226,10 +230,10 @@ Run: <result and scope>. Test: <result, scope, failures/warnings/skips>.
 
 **Comparison scope:** <changed columns, common population/window, and key>.
 
-| Changed columns | Production → development | Finding and reason |
-| --- | --- | --- |
-| <fields sharing one result> | <ownership/type/value behavior> | <match or explained difference> |
-| <field with negligible accepted drift> | <qualitative change> | Negligible and accepted because <demonstrated cause>. |
+| Change | Description | Accepted? | Impact (<unit>) | Example <record key> | Example <related entity key> |
+| --- | --- | --- | ---: | --- | --- |
+| <demonstrated cause> | <selected output in production → development> | <status; why and acceptance source> | <measured impact> | <verified ID> | <paired parent/entity ID> |
+| <insufficient evidence> | <association becomes null> | <accepted as unresolved, or pending; remaining limitation> | <measured impact> | <verified ID> | <paired parent/entity ID> |
 
 <Include the following only for material key-metric differences.>
 
@@ -242,6 +246,14 @@ Run: <result and scope>. Test: <result, scope, failures/warnings/skips>.
 decisions when applicable.>
 ```
 
+Adapt `Impact (<unit>)` to the validated question: affected rows, distinct
+customers/users/orders, or a defined measure delta. Label `count(distinct ... )`
+explicitly when used. Omit the related-entity column when it is not meaningful;
+otherwise include both the example record key and its associated business key.
+Do not add a total across different units or overlapping distinct-entity counts.
+Retain significant production/development metric values in the optional metric
+table, rather than substituting only a count of affected records.
+
 Do not fill this structure with not-applicable rows or invented results. An
 empty changed-column allowlist may have no data-comparison table but still
 requires reporting impact checks when dependencies are retired. Where useful,
@@ -249,10 +261,10 @@ include a single short scope note that downstream data tests were not requested.
 
 Summarize selected-column differences and expected behavior; do not present
 matching aggregates as column parity or selected-column equality as whole-row
-parity. Use the same comparison scope on both sides. Retain detailed per-row
-evidence, sample keys, exact deltas, raw results, and commands internally while
-publishing the useful comparison tables above. A durable, access-controlled
-evidence link is optional if useful and already available;
+parity. Use the same comparison scope on both sides. Publish representative,
+safe record and related-entity IDs in the cause table; keep exhaustive per-row
+inventories, extra samples, raw results, and commands in internal evidence.
+A durable, access-controlled evidence link is optional if useful and already available;
 do not substitute a list of local JSON files or create a new upload for it.
 
 For example, a retirement with only local checks complete should say that
