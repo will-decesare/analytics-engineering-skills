@@ -88,6 +88,11 @@ an isolated base checkout for the tester's
 [DAG screenshots](../analytics-engineer/references/dag-screenshots.md).
 Do not switch or reset an active checkout to obtain the baseline.
 
+Apply [Document the final change](../analytics-engineer/references/pull-request-workflow.md#document-the-final-change)
+to committed documentation, code comments, and any authorized commit messages
+or push summaries. Explain the final model design; keep conversation decisions
+and unchanged-baseline inventories in internal handoffs.
+
 ## Hand off to the coordinator
 
 Prepare the Developer Handoff Packet defined in `agent-handoffs.md`. Include the

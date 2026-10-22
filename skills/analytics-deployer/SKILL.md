@@ -42,7 +42,12 @@ Read:
 ## Prepare the pull request
 
 1. Inspect the complete diff against the intended base and confirm it is one
-   logical ticket-sized change.
+   logical ticket-sized change. Apply
+   [Document the final change](../analytics-engineer/references/pull-request-workflow.md#document-the-final-change)
+   to commit messages, push summaries, and PR text. Exclude conversation history
+   and unchanged-baseline claims that do not explain the resulting design or
+   impact; return any such committed documentation to the coordinator for
+   developer correction.
 2. For a new PR, populate the repository template with the developer's
    motivation, implementation, model grains, tests, contract changes, and
    downstream or BI impact. For an existing PR, read its latest description

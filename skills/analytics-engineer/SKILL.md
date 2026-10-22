@@ -108,7 +108,11 @@ Only report downstream execution when explicitly requested and actually run.
 For DAG changes, require real before/after dbt Docs screenshots under
 [dag-screenshots.md](references/dag-screenshots.md).
 Exclude command dumps, JSON artifacts, hashes, and code-provenance narration
-from reviewer-facing text unless explicitly requested.
+from reviewer-facing text unless explicitly requested. Apply
+[Document the final change](references/pull-request-workflow.md#document-the-final-change)
+across roles: verify that commit messages, push summaries, PR text, and committed
+documentation explain the final change without recounting conversation decisions
+or listing unchanged models solely to describe development history.
 
 ## Preserve role boundaries
 
