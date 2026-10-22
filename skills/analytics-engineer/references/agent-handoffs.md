@@ -10,6 +10,12 @@ commands, raw/API results, artifact paths, and fingerprint verification here
 for reproducibility. Do not paste them into PR descriptions or comments;
 publish only the concise summary defined in `pull-request-workflow.md` unless
 the user requests technical detail or a repository template requires it.
+Conversation decisions, abandoned approaches, and baseline-preservation notes
+may support internal coordination. They are not publication-ready documentation;
+apply [Document the final change](pull-request-workflow.md#document-the-final-change)
+when turning packets into commit messages, push summaries, PR text, or repository
+documentation. Retain relevant final-design rationale and required acceptance
+evidence without narrating conversation history.
 The deployer incorporates the concise summary into the original PR description
 and updates it in place. No role posts a separate validation comment unless
 the user explicitly requests one.

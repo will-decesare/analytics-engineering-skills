@@ -3,6 +3,7 @@
 ## Contents
 
 - [Establish authority and repository rules](#establish-authority-and-repository-rules)
+- [Document the final change](#document-the-final-change)
 - [Maintain the original PR description](#maintain-the-original-pr-description)
 - [Gather evidence](#gather-evidence)
 - [Establish the motivation](#establish-the-motivation)
@@ -29,6 +30,32 @@
   `feat/`, `fix/`, or `refactor/` name that matches the change type.
 - Link the issue, task, specification, or prior PR when one exists. Preserve its
   identifier in the title, body, or commits only where local rules require it.
+
+## Document the final change
+
+Apply this rule to commit messages, PR titles and descriptions, push summaries,
+and repository documentation or code comments included in a commit. Write for
+someone who has not seen the conversation: explain the resulting behavior,
+implementation, motivation, relevant validation, and operational impact.
+
+Do not reference past decisions in the agent conversation, abandoned approaches,
+intermediate reversions, or instructions to preserve or restore files. Keep
+that history in internal handoffs. Carry forward any relevant technical
+rationale as a standalone explanation of the final design, without narrating
+who requested it or how the conversation reached it. Preserve required
+acceptance evidence and task links without replaying the discussion.
+
+Omit unchanged-model inventories and claims such as "these models retain their
+production/main baseline SQL from commit <SHA>" when they only recount agent
+work history. Remove the whole claim; deleting the SHA alone is insufficient.
+Mention unchanged behavior only when it explains a concrete compatibility
+constraint, dependency, validation boundary, or operational consequence of the
+actual change. Explain that consequence directly. Keep baseline identities and
+code-state verification in internal evidence under the existing provenance rules.
+
+Before committing, pushing, or publishing PR text, compare the documentation
+with the final diff and remove statements whose only purpose is to explain the
+conversation or earlier development iterations.
 
 ## Maintain the original PR description
 
