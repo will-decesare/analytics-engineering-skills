@@ -1,6 +1,6 @@
 ---
 name: analytics-engineer
-description: Coordinate analytics work tickets through development, changed-column validation, repair loops, and a concise evidence-backed PR. Use as the default analytics workflow entry point. Downstream data validation is opt-in; reporting deprecations require live content-impact checks.
+description: Coordinate analytics work tickets through development, contract-aware validation, repair loops, and a concise evidence-backed PR. Use as the default analytics workflow entry point. Downstream data validation is opt-in; reporting deprecations require live content-impact checks.
 ---
 
 # Analytics Engineering Workflow
@@ -15,8 +15,7 @@ integrity, and explicit authority for external actions.
 - Use `$analytics-developer` directly only for an implementation-only request
   or to resume a developer phase outside a coordinated workflow.
 - Use `$analytics-tester` to validate an existing developer handoff against
-  production, testing only changed columns in directly changed models by
-  default. Include downstream data validation only when explicitly requested;
+  production, using the validation mode for the directly changed models. Include downstream data validation only when explicitly requested;
   require live reporting-impact checks for deprecations as described below.
 - Use `$analytics-deployer` only after a current tester pass to prepare the PR
   description with its validation summary and the authorized draft pull
@@ -26,6 +25,23 @@ As quarterback, retain ownership of the ticket, current code fingerprint,
 validation status, authorization scope, and next role. Start each specialist,
 receive every handoff, and route the next action without requiring the user to
 coordinate agents.
+
+## Preserve the reporting contract
+
+For source refactors, preserve production populations, output keys, field names,
+metric meaning, attribution coverage, allocation and timezone behavior unless
+specific changes are requested. Record the contract and approved exceptions
+under [modeling-principles.md](references/modeling-principles.md#record-the-production-contract).
+A source switch alone does not authorize broader reporting populations or new
+metrics. Carry the user's decisions forward across repairs and follow-ups.
+
+Choose the validation mode under
+[full-validation.md](references/full-validation.md#set-the-validation-scope).
+Independent development/testing remains the path for executable model changes.
+For documentation, comments, descriptions or PR-text follow-ups, use the relevant
+specialist directly and reuse applicable evidence after confirming executable
+logic and contracts are unchanged. Recheck affected reference queries when their
+recipes or quoted values change; do not launch a warehouse rebuild for prose.
 
 ## Select models for the work
 
@@ -54,13 +70,13 @@ developer handoff and PR's Description and Motivation section.
 2. Receive the Developer Handoff Packet, verify its code fingerprint and
    `READY_FOR_TEST` state, and record the model/changed-column allowlist before
    starting a separate `$analytics-tester` agent.
-3. Have the tester build the isolated development state and perform full
-   development-versus-production validation only for that allowlist. Do not
+3. Have the tester validate the isolated development state against production
+   for the recorded mode and column scope, respecting any no-refresh constraint. Do not
    validate downstream data unless the user explicitly requests it. For
    reporting deprecations, also require the live content-impact check below.
-4. Require schema and value comparisons and relevant tests for changed columns
-   only. Use stable keys for row alignment and minimal comparison-integrity
-   checks; exclude unchanged-column profiling and unrelated test suites.
+4. Require schema and row-keyed value comparisons for the selected columns.
+   Reporting refactors default to all-column comparisons in directly changed
+   models; focused fixes use changed outputs. Keep unrelated tests out of scope.
    For uncertain acceptance or logic-driven metric changes not explicitly
    accepted by the user, ask with the observed impact and proposed explanation.
    Continue independent work, but keep the affected validation gate unresolved.
@@ -75,15 +91,16 @@ developer handoff and PR's Description and Motivation section.
    Confirm sourced motivation, acceptance decisions, and rendered Before/After
    DAG images when required before reporting the PR ready for review.
    Do not require a separate validation comment or comment URL.
-8. Tell the user that the PR is ready for review and ask whether the exact
-   isolated development schemas should be dropped.
+8. Report the completed authorized actions and remaining limitations. Ask about
+   exact schema cleanup only when no retention decision is already on record.
 
 Read [agent-handoffs.md](references/agent-handoffs.md) for the required packets
 and communication protocol.
 
 Read [full-validation.md](references/full-validation.md) to resolve scope.
-"Full validation" means complete validation within the changed-column
-allowlist, not all columns or descendants. Record unrequested downstream work
+"Full validation" completes the recorded mode: all comparable columns for
+reporting refactors, changed outputs for focused fixes, and scoped static or
+reference-query checks for documentation. Record unrequested downstream work
 as excluded by scope, not incomplete validation or a reason to block a PR.
 
 For reporting dependency deprecations, read
@@ -141,4 +158,5 @@ action that was not authorized. Never imply that a skipped validation passed.
 
 Keep production read-only during pre-PR validation. A role named deployer does
 not authorize production deployment. After PR creation, retain isolated schemas
-until the user answers the explicit cleanup question.
+under the user's recorded retention decision; never repeat an already answered
+cleanup question or delete schemas without authorization.

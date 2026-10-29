@@ -23,7 +23,11 @@ Every packet must include:
 - repository, branch, worktree, and intended base branch;
 - current commit SHA plus a fingerprint of staged and unstaged changes;
 - isolated schema names and dbt artifact/log paths;
-- model-to-changed-column allowlist and reason for each inclusion;
+- work type, validation mode, model-to-column scope and reason for inclusions;
+- production contract, required non-changes and specifically approved exceptions;
+- baseline kind (actual production, matched-input replay or intermediate result),
+  source freshness/cutoff, date/timezone basis and execution method (materialized,
+  read-only inline candidate or static checks);
 - explicit downstream data-validation request and its model/column scope, or
   `not requested; not performed`;
 - reporting-deprecation impact scope and check status, or `not applicable`,
@@ -35,7 +39,11 @@ Every packet must include:
   selection basis, actual settings when exposed (otherwise `not exposed`),
   and any model fallback or escalation with its reason.
 
-Do not reuse a pass packet after the fingerprint changes.
+Executable or contract changes require renewed affected checks. For prose-only
+changes, attach a compact applicability attestation to the new fingerprint:
+which executable definitions remain identical, which reference queries were
+rechecked if needed, and which evidence still applies. Do not relabel old output
+as a new run. Extend the existing packets; do not create another handoff layer.
 
 For delegated routine evidence, include the worker's assignment, fingerprint,
 exact sources/commands, timestamps, scope and coverage, results, artifact paths,
@@ -158,7 +166,8 @@ Include:
   routine smoke-test and production-verification reminders;
 - exact isolated schemas still present;
 - whether retaining those schemas supports review or additional validation;
-- whether the coordinator should ask the user about schema cleanup.
+- the recorded schema-retention decision, or whether an unanswered cleanup
+  question is needed.
 
 Address it to the analytics-engineer coordinator. The coordinator tells the
 user that the PR is ready for review only when the PR actually exists, the body
@@ -172,8 +181,9 @@ complete.
 - Let the analytics-engineer coordinator start every specialist and retain the
   current ticket, fingerprint, validation result, and authorization scope.
 - Start the deployer only after the coordinator receives a current `PASS`.
-- Evaluate that pass against the recorded changed-column allowlist. Excluding
-  unchanged columns and unrequested descendants does not invalidate a pass.
+- Evaluate that pass against the recorded validation mode and column scope.
+  Excluding out-of-scope columns and unrequested descendants does not invalidate
+  a pass; omitting required all-column checks in refactor mode does.
   Required live reporting-deprecation impact checks remain part of the gate,
   including when a ticket has no changed-column data comparisons.
 - On tester failure, have the coordinator return the packet to development and

@@ -19,16 +19,18 @@ Git/PR problems without changing implementation or bypassing the tester gate.
 
 1. Read every applicable repository instruction file, contribution guide, CI
    workflow, deployment workflow, and pull-request template.
-2. Require both the latest Developer Handoff Packet and a Tester Pass Packet
-   from the `$analytics-engineer` coordinator.
+2. For executable/contract changes, require the latest developer and independent
+   tester pass packets. For documentation/PR-text-only work, accept a compact
+   static/reference-check handoff and any applicable prior evidence; do not
+   require a new independent warehouse run or invent a data-validation claim.
 3. Verify that the tester's branch, commit, diff fingerprint, and validation
-   scope still match the current worktree. If anything material changed, return
-   the work to the coordinator for a new `$analytics-tester` pass; do not use
-   stale validation.
+   scope still match the current worktree. Executable/contract changes need
+   renewed affected checks. A documentation-only applicability attestation can
+   carry existing evidence forward after logic equivalence is verified.
 4. Require a pass for the recorded model/column scope. Do not proceed from
    `FAIL`, `BLOCKED`, missing required in-scope evidence, or unexplained in-scope
-   differences. Unchanged columns and unrequested downstream checks are scope
-   exclusions, not incomplete validation or blockers.
+   differences. Columns outside the recorded mode and unrequested downstream
+   checks are scope exclusions, not incomplete validation or blockers.
 5. For reporting deprecations, require the live content-impact result and any
    migration decisions from the tester. Do not confuse optional downstream
    data tests with this required check or imply that a local parser validated
@@ -87,6 +89,20 @@ Read:
    migrations. Routine smoke testing is expected operational work and should
    not appear as a PR to-do; this does not grant new production authority.
 
+## Describe the final state
+
+Use the current production comparison, actual model/field names, and a short
+reason for every material difference. Report verified non-changes and limits;
+unchanged formulas do not prove unchanged values. Replace superseded numbers
+and remove abandoned alternatives, references to old PR versions, and agent
+conversation history. Keep baseline and cutoff details needed to interpret
+results without publishing an iteration log. Follow the model summary format in
+[pull-request-workflow.md](../analytics-engineer/references/pull-request-workflow.md#write-the-validation-section).
+
+Keep governed metric names and reporting recipes aligned with the final code.
+Reference values need their period, filters, formula and verification date;
+do not copy historical numbers into new definitions without checking them.
+
 ## Respect Git and GitHub authority
 
 Treat committing, pushing, creating a draft PR, updating its description,
@@ -114,6 +130,6 @@ packet that draft content, rather than a PR, is ready.
 
 After successfully creating and verifying a PR that used isolated development
 schemas, include the exact schema names and retention considerations in the
-completion packet. The coordinator asks the user whether to drop them. Never
-drop a schema automatically; re-check active use and require explicit
-authorization for each task-owned schema.
+completion packet. Honor an existing retention decision; otherwise the coordinator asks about
+the exact schemas once. Never drop a schema automatically; re-check active use
+and require explicit authorization for each task-owned schema.

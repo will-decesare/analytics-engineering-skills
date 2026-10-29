@@ -10,8 +10,8 @@ workflows.
   final pull-request handoff.
 - `analytics-developer`: implements work tickets, refactors or creates models,
   and adds relevant tests and documentation.
-- `analytics-tester`: independently compares changed columns in directly
-  changed models with production, including relevant tests, schema checks, and
+- `analytics-tester`: independently compares the selected reporting contract
+  with production, including relevant tests, schema checks, and
   row-keyed value comparisons. Downstream data validation is opt-in; reporting
   deprecations require a live API-based content-impact check.
 - `analytics-deployer`: prepares evidence-backed pull requests and maintains
@@ -44,8 +44,9 @@ The coordinator starts each specialist and keeps the current ticket, code
 fingerprint, validation state, and authorization scope. Failed validation is
 routed back to the developer. After a passing tester handoff, the coordinator
 starts the deployer, verifies the resulting pull request, reports that it is
-ready for review, and asks whether isolated development schemas should be
-dropped.
+ready for review, and honors the recorded schema-retention decision or asks
+about exact cleanup once if unanswered. Documentation-only follow-ups can reuse
+applicable evidence without repeating model builds.
 
 ## Model routing
 
@@ -70,12 +71,18 @@ launch settings, role boundaries, and escalation rules.
 
 ## Validation scope
 
-Full validation covers only changed columns in directly changed models by
-default. Unchanged columns are excluded from profiling and value comparisons;
-row keys still align the comparison. All columns of a new model count as added
-columns. Downstream models and columns are not built or validated unless you
-explicitly request it, and their exclusion does not block a passing result or
-PR preparation.
+Reporting refactors preserve the production contract by default: populations,
+row coverage, metric names, allocation, null handling and timezone behavior change
+only under explicit accepted exceptions. Full-row validation covers all comparable
+columns in directly changed models. Focused fixes/features use changed-output
+checks; documentation uses static/reference checks. Explicit row-identity requests
+include all comparable columns. Downstream data validation stays opt-in.
+
+For substantial reporting refactors, trailing 12 months through yesterday is an
+overridable starting window. No-refresh requests use existing frozen inputs and
+freshness cutoffs. Actual production comparisons and matched-input replays are
+labeled separately. Material deltas need demonstrated causes, acceptance sources,
+reconciled cohorts and safe row examples; matching totals alone do not prove parity.
 
 When retiring a reporting dependency, the developer maps its reporting
 identifiers and the tester uses the relevant reporting APIs to check saved
@@ -84,7 +91,8 @@ downstream data testing. Missing live access is reported as unknown impact,
 not proof of safety. Hosted content is not changed without authorization.
 
 Validation results, material differences, reporting impact, and remaining
-actions belong in the original PR description. Subsequent results update its
+actions belong in the original PR description, which describes the final state
+without old-PR narratives or abandoned alternatives. Subsequent results update its
 existing sections while preserving unrelated content; no separate validation
 comments are posted unless explicitly requested. Detailed commands, JSON,
 local artifact paths, and commit/fingerprint verification stay in internal

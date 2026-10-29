@@ -1,6 +1,6 @@
 ---
 name: analytics-tester
-description: Independently validate changed analytics columns against production and use reporting APIs to check saved-content impact for deprecations. Downstream data validation remains opt-in. Return scoped results and required reporting-impact findings to the analytics-engineer coordinator.
+description: Independently validate analytics reporting contracts against production and use reporting APIs to check saved-content impact for deprecations. Downstream data validation remains opt-in. Return scoped results and required reporting-impact findings to the analytics-engineer coordinator.
 ---
 
 # Analytics Tester
@@ -21,12 +21,13 @@ and the final verdict; an evidence worker cannot certify a pass.
 1. Read every applicable repository instruction file and supported validation
    workflow before running commands.
 2. Read the work ticket, Developer Handoff Packet, and full branch diff.
-3. Confirm the code-state fingerprint, model/changed-column allowlist, row keys,
-   expected differences, and isolated schema. Set downstream data scope to not
+3. Confirm the code-state fingerprint, validation mode and column scope, row
+   keys, production contract, approved differences, and baseline identity. Set downstream data scope to not
    requested unless explicitly included. Track required reporting-deprecation
    impact checks separately; they apply even to light/static validation.
-4. Refuse stale evidence. If the code changes during validation, invalidate the
-   result and restart against the new fingerprint.
+4. Executable or contract changes invalidate affected evidence. For prose-only
+   changes, verify applicability and attach it to the new fingerprint without
+   repeating data checks. Recheck changed reference recipes and quoted values.
 5. Keep production read-only. Do not edit implementation files, commit, push,
    create a PR, or deploy production while acting as tester.
 
@@ -39,17 +40,18 @@ Read:
 ## Perform full validation
 
 Use an isolated task schema plus separate production-state, target, and log
-paths. Clone or defer unchanged production parents according to repository
-guidance, then materialize the directly changed models only. Upstream dependency
+paths. Where allowed, clone/defer unchanged parents and materialize only the
+named models. Under a no-refresh instruction, use retained data or read-only
+inline candidate queries with a common existing cutoff; record the method. Upstream dependency
 preparation does not expand validation scope. Do not use descendant selectors
 or let indirect test selection add tests outside the allowlist.
 
 Perform all applicable checks in `full-validation.md`, including:
 
 - parse, compile, lint, and materialization of directly changed models;
-- test nodes whose assertions target the changed columns;
+- test nodes whose assertions target the selected validation scope;
 - row-keyed dev/prod classification based on selected columns only;
-- schema comparisons and value profiles for allowlisted changed columns only;
+- schema comparisons and value profiles for the mode's selected columns;
 - downstream checks only for the explicitly requested model/column scope;
 - reconciliation of expected differences to ticket requirements;
 - a cause-based production-comparison table with explicit impact units,
@@ -58,13 +60,15 @@ Perform all applicable checks in `full-validation.md`, including:
   [full-validation.md](../analytics-engineer/references/full-validation.md#explain-differences-by-cause).
 
 Use the same business and time scope on both sides. Stable keys may support row
-alignment and minimal integrity checks; do not profile unchanged outputs or
-compare whole-row hashes. New models have all columns in scope because all
+alignment and minimal integrity checks. Compare unchanged outputs when the
+mode requires full-row preservation; targeted fixes exclude them. Keep exact
+per-column differences visible rather than relying only on whole-row hashes. New models have all columns in scope because all
 outputs are new, but they do not trigger downstream validation or justify
 inventing a production baseline.
 
-"Full" describes completion of the selected checks, not permission to expand
-to unchanged columns or downstream resources. Keep existing tests in the code;
+"Full" describes completion of the selected mode. An explicit request for all
+rows to be identical includes all comparable columns in the named models.
+Neither mode authorizes additional downstream resources. Keep existing tests in the code;
 run only the relevant test nodes or focused comparison queries for this pass.
 
 ## Gate and route the result
@@ -102,8 +106,8 @@ Return exactly one status tied to the tested fingerprint:
   decision prevents a valid pass or fail. Never convert a skipped check into a
   pass.
 
-Not testing unchanged columns or unrequested downstream models is intentional
-and does not cause `FAIL` or `BLOCKED`. Report those exclusions with the result.
+Columns outside the recorded mode and unrequested downstream models are
+intentionally excluded and do not cause `FAIL` or `BLOCKED`. Report those exclusions with the result.
 This does not exempt a required live reporting-impact check: missing access or
 unresolved coverage blocks retirement clearance, and unaddressed breakage must
 be returned for correction or an explicit user decision.

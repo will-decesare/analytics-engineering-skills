@@ -1,5 +1,27 @@
 # Modeling Principles
 
+## Record the production contract
+
+Before a reporting refactor, capture one compact internal contract alongside the
+existing handoff: metric name/formula and governed source, eligible population,
+linked/unlinked and matched/unmatched coverage, grain/key, allocation, null/blank
+normalization, event date, timezone and session-setting dependencies. Separate
+required non-changes from specifically approved exceptions. Carry that decision
+record through repairs; a broad source-refactor request is not metric redesign.
+
+Preserve production row coverage, repeat/acquisition eligibility, names and
+reported denominators by default. Do not add unmatched rows, empty reporting
+combinations, alternative metrics or public diagnostic fields solely to make
+all-order totals reconcile. Validate against the equivalently filtered order
+population instead. Prefer test-local diagnostics when they suffice.
+
+Changing the event used for dating does not authorize a timezone change. Check
+raw timestamp types, upstream views/functions and session timezone when a
+conversion is implicit. Unchanged SQL can still yield different calendar dates.
+Compare periods on the same basis; complete weeks/months do not inherently
+eliminate timezone boundary differences. Preserve production buckets unless a
+specific temporal change is accepted.
+
 ## Begin with grain
 
 - Define what one row represents before selecting fields.

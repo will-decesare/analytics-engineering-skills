@@ -144,7 +144,7 @@ DBT_DEV_SCHEMA=<task-schema> dbt run --target dev \
     --log-path <environment-root>/logs/run
 
 DBT_DEV_SCHEMA=<task-schema> dbt test --target dev \
-    --select <explicit-changed-column-test-nodes> \
+    --select <explicit-scoped-test-nodes> \
     --indirect-selection empty \
     --state <environment-root>/prod-state \
     --target-path <environment-root>/test-target \
@@ -163,10 +163,11 @@ before execution and verify afterward that every created relation belongs to
 the task namespace. Abort if a command resolves to the default personal schema
 or production unexpectedly.
 
-Run development-versus-production comparisons only on allowlisted changed
-columns in the task relation. Use row keys for alignment and minimal integrity
-checks. Apply identical time and business predicates to both sides; do not
-profile unchanged columns or validate descendants by default.
+Run development-versus-production comparisons on the columns selected by the
+validation mode in full-validation.md: all comparable outputs for reporting
+refactors, changed outputs for focused fixes. Use row keys and identical time
+and business predicates. Downstream validation remains opt-in. No-refresh work
+uses existing snapshots or read-only inline queries instead of this build path.
 
 ## Validate and hand off
 
@@ -193,7 +194,8 @@ database root, or a wildcard.
 
 After a pull request is successfully created for work that used an isolated
 development schema, return the exact schema names and retention considerations
-to the analytics-engineer coordinator. The coordinator explicitly asks the user
-whether to drop them. Treat an affirmative answer as authorization only for
+to the analytics-engineer coordinator. Honor the recorded retention decision;
+ask whether to drop them only if unanswered. Treat an affirmative answer as
+authorization only for
 those named, task-owned schemas; re-check that they are not in active use
 immediately before dropping them.

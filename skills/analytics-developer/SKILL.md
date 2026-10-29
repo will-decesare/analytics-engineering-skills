@@ -53,8 +53,9 @@ concurrently used worktrees, and record the verified branch point internally.
    when working standalone); continue independent work without inventing it.
 2. Inspect the target model, parents, descendants, metadata, tests, metrics,
    exposures, documentation, and downstream BI contracts.
-3. Define each changed model's purpose, exact grain, stable key, source
-   ownership, join cardinalities, time behavior, and compatibility impact.
+3. Record the production contract, required non-changes and approved exceptions
+   under modeling-principles.md. Include population, row coverage, source
+   ownership, grain/key, metric names, allocation, nulls and time behavior.
 4. Refactor existing models or add new models at the earliest stable semantic
    owner. Avoid redundant logic, unexplained deduplication, fan-out, and casts
    or transformations inside join predicates.
@@ -63,16 +64,18 @@ concurrently used worktrees, and record the verified branch point internally.
 6. Add or update schema metadata, model and column descriptions, grain tests,
    relationship tests, accepted values, and business-invariant tests warranted
    by the ticket. Update semantic and BI contracts when affected.
-7. Allocate a collision-resistant task schema and isolated dbt target/log paths
-   when another workflow may use the default development environment.
+7. For warehouse-writing work, allocate a collision-resistant task schema and
+   isolated dbt paths. Documentation-only or no-refresh work does not require
+   allocating or populating a new warehouse schema.
 8. Run developer checks supported by the repository, normally parse or
    compile, lint, and narrowly scoped non-destructive checks. Do not represent
    these checks as full development-versus-production validation.
 
 Identify changed output columns from the ticket and diff for each directly
 changed model. Add or update tests for those columns and retain unrelated
-existing tests. When running tests, select only assertions on the changed
-columns, with minimal key checks needed for comparison. Do not perform
+existing tests. When running tests, use the recorded validation mode in full-validation.md;
+include unchanged outputs for a reporting refactor, with minimal key checks
+needed for comparison. Do not perform
 downstream data validation unless explicitly requested; reading lineage and
 updating contract documentation do not imply such a request.
 
@@ -87,6 +90,20 @@ When the change alters model dependencies, preserve the before-state docs or
 an isolated base checkout for the tester's
 [DAG screenshots](../analytics-engineer/references/dag-screenshots.md).
 Do not switch or reset an active checkout to obtain the baseline.
+
+## Keep the diff focused
+
+Preserve untouched formatting, aliases, CTE placement and descriptions. Apply
+local conventions when introducing logic; do not relocate existing references
+just for conformity. Reduce redundant logic without replacing explicit consumer
+projections with table.* merely to shorten the file. Prefer correcting the
+semantic owner over adding compensating logic to multiple consumers.
+
+Retain established reporting metric names and formulas unless their change is
+approved. Prefer test-local calculations to persistent diagnostic columns added
+only for validation. If a diagnostic output is necessary, state its test purpose
+and keep it out of reporting recipes and BI exposure unless requested. Update
+only descriptions whose meaning changes or whose inaccuracy is demonstrated.
 
 ## Hand off to the coordinator
 
