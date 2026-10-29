@@ -112,33 +112,38 @@ personal schema.
 
 ## Validate by environment and row
 
-Use exact commands documented by the repository with the changed-column scope
-defined in [full-validation.md](full-validation.md). Full validation covers
-changed columns in directly changed models; downstream data validation
-requires an explicit request. Reporting deprecations additionally require the
+Use exact commands documented by the repository with the mode and column scope
+from [full-validation.md](full-validation.md). Reporting refactors compare all
+comparable outputs in directly changed models; focused fixes select changed
+outputs. Downstream data validation requires an explicit request. Reporting deprecations additionally require the
 live content-impact check below. Apply the same data-testing boundary to
 development and any authorized post-deployment checks.
+
+Under a no-refresh instruction, do not clone fresh data or rebuild relations.
+Use existing snapshots or read-only inline candidate SQL as specified in
+full-validation.md; label unperformed materialization/tests rather than claiming
+they ran. Documentation-only work does not require this build ladder.
 
 ### Development validation
 
 1. Parse the project, compile the changed selector, and lint modified SQL and
    YAML. Record separate parse/compile outcomes and their actual scopes.
 2. Preserve a readable production baseline for each changed model. Clone or
-   defer unchanged production parents into the task-specific development
-   environment when supported, then rebuild only the changed selector and
-   required parents.
-3. Run only test nodes asserting the allowlisted changed columns. Inspect the
-   resolved selector to avoid unchanged-column and downstream tests. Prefer
+   defer unchanged parents into the task-specific development environment;
+   materialize only the named models. Additional parent builds require their
+   own justified, authorized scope; do not refresh unchanged upstream history.
+3. Run test nodes asserting the mode's selected columns. Inspect the resolved
+   selector to avoid out-of-scope columns and downstream tests. Prefer
    separate model runs and explicitly selected tests over a whole-model suite.
 4. Compare the development relation with the current production relation at
    the model's declared unique key:
    - limit both sides to the same time and business scope;
-   - compare only allowlisted changed columns with null-safe equality;
+   - compare all mode-selected columns with null-safe equality;
    - use explicit tolerances only for columns whose numeric behavior warrants
      them;
    - exclude or normalize nondeterministic audit columns deliberately;
    - use a full outer join to classify development-only, production-only,
-     changed, and matching keys on the selected columns, not whole rows;
+     changed, and matching keys over all columns selected by the mode;
    - report category counts and inspect representative rows from each material
      difference class.
 5. Use row counts and key uniqueness as needed to support a valid comparison.
@@ -159,7 +164,7 @@ window with full production history; apply the same predicate to both relations.
 
 After an authorized deployment through the repository's normal orchestration:
 
-1. run production tests targeting the changed-column allowlist;
+1. run production tests targeting the approved mode and column scope;
 2. use keys to align rows and check nulls or business invariants only for
    selected columns;
 3. compare those columns with the approved expected results or captured

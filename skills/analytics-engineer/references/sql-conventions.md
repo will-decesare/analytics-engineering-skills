@@ -14,8 +14,10 @@ is silent, use these portable defaults:
 - use CTEs instead of non-trivial subqueries in `from` or `join` positions;
 - use the repository's established positional or named `group by` style.
 
-Do not reformat untouched legacy or retired files merely to impose these
-defaults.
+Do not reformat untouched existing, legacy or retired logic merely to impose
+these defaults. Preserve aliases and CTE placement outside the required change;
+introduce top-of-file references when adding logic rather than reorganizing
+existing models just for conformity.
 
 ## Structure transformations
 

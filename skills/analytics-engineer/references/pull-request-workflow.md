@@ -27,8 +27,8 @@
   Do not refresh or rewrite an already-tested feature branch automatically.
 - Follow local branch naming. If no convention exists, use a concise
   `feat/`, `fix/`, or `refactor/` name that matches the change type.
-- Link the issue, task, specification, or prior PR when one exists. Preserve its
-  identifier in the title, body, or commits only where local rules require it.
+- Link the issue, task, specification or relevant dependency PR when needed.
+  Omit unrelated earlier PR versions and development-history references.
 
 ## Maintain the original PR description
 
@@ -60,6 +60,19 @@ If editing is unavailable or unauthorized, report the blocker and provide the
 proposed description text; do not substitute a comment. Leave existing
 discussion comments untouched unless their editing or removal was requested.
 
+Publish the final change and demonstrated production impact, not the conversation
+that produced it. Remove superseded results, abandoned metric alternatives,
+prior-iteration comparisons presented as outcomes, and implementation-history
+inventories from PR text, commit messages, repository docs and comments. Keep
+actual compatibility constraints, verified non-changes, accepted exceptions and
+validation limits. A necessary production baseline or source cutoff remains
+part of the evidence, not an excuse to publish an iteration log.
+
+Governed metric names and recipes remain authoritative unless explicitly
+changed. Recheck affected sample queries, reference values, periods, filters and
+verification dates; do not promote a validation-only field into a reporting
+source of truth. Mark partially refreshed reference tables by measured scope.
+
 ## Gather evidence
 
 Before drafting or updating the description:
@@ -73,7 +86,7 @@ Before drafting or updating the description:
 6. collect row-level development-versus-production results, including the
    isolated development schema, model/changed-column allowlist, relation names,
    difference classes based on those columns, and representative keys;
-7. collect schema and value evidence only for the selected changed columns.
+7. collect schema and value evidence for the recorded mode's selected columns.
    Include downstream model/column results only if that validation was
    explicitly requested; otherwise mark it not requested and not performed;
 8. identify differences, their demonstrated causes, and acceptance sources
@@ -93,9 +106,9 @@ Keep detailed evidence in the internal developer/tester packets. Gathering
 commands, artifact paths, and fingerprints is not an instruction to publish
 them. Never paste secrets, credentials, or private customer data.
 
-Treat full validation as complete checks within the recorded changed-column
-scope. Unchanged columns and unrequested downstream checks are intentionally
-excluded, not incomplete testing, pre-merge tasks, or blockers. Keep any
+Treat full validation as complete checks within the recorded mode and column
+scope. Out-of-scope columns and unrequested downstream checks are intentionally
+excluded, not incomplete testing, pre-merge tasks or blockers. Keep any
 downstream impact notes separate from claims of executed validation. Do not
 classify a required reporting-deprecation API check as unrequested or optional.
 
@@ -228,7 +241,7 @@ checklist:
 **dbt checks:** Parse: <result>. Compile: <result and scope>.
 Run: <result and scope>. Test: <result, scope, failures/warnings/skips>.
 
-**Comparison scope:** <changed columns, common population/window, and key>.
+**Comparison scope:** <mode, selected columns, baseline, population/window and key>.
 
 | Change | Description | Accepted? | Impact (<unit>) | Example <record key> | Example <related entity key> |
 | --- | --- | --- | ---: | --- | --- |
@@ -246,6 +259,19 @@ Run: <result and scope>. Test: <result, scope, failures/warnings/skips>.
 decisions when applicable.>
 ```
 
+For a multi-model reporting refactor, a compact model summary can combine the
+material metrics, reasons and verified non-changes. Use actual model names and
+this default shape, adapting the coverage label to the requested deliverable:
+
+| Model | Production → development difference, with reason | Validation coverage and limitations |
+| --- | --- | --- |
+| <model> | <production → development values and demonstrated cause> | <rows/columns assessed, verified non-changes, method/cutoff and unresolved issues> |
+
+Explain each material accepted change in a short sentence. Include real grouping
+keys and old/new row values when totals obscure reporting changes. Detailed cause
+tables can supplement this when needed; do not repeat the same results in several
+tables or force a fixed layout over a user-specified table.
+
 Adapt `Impact (<unit>)` to the validated question: affected rows, distinct
 customers/users/orders, or a defined measure delta. Label `count(distinct ... )`
 explicitly when used. Omit the related-entity column when it is not meaningful;
@@ -260,7 +286,7 @@ requires reporting impact checks when dependencies are retired. Where useful,
 include a single short scope note that downstream data tests were not requested.
 
 Summarize selected-column differences and expected behavior; do not present
-matching aggregates as column parity or selected-column equality as whole-row
+matching aggregates as column parity or a subset comparison as whole-row
 parity. Use the same comparison scope on both sides. Publish representative,
 safe record and related-entity IDs in the cause table; keep exhaustive per-row
 inventories, extra samples, raw results, and commands in internal evidence.
@@ -308,9 +334,9 @@ comment. The creation steps below apply only when a new PR is needed.
   Markdown rendering, and checklist.
 - If the work used an isolated development schema, include the exact task-owned
   schema names and retention considerations in the Deployer Completion Packet.
-  After the PR is successfully created and verified, the analytics-engineer
-  coordinator asks the user whether to drop them. Do not drop anything without
-  explicit authorization, and re-check active use before cleanup.
+  After the PR is verified, honor any existing retention decision; ask about
+  the exact schemas only if unanswered. Never delete them without authorization,
+  and re-check active use before cleanup.
 - Inspect CI or dbt job status; do not claim success while checks are pending.
 - Update the original description's relevant sections when validation results,
   scope, migration instructions, or reporting impact change. Keep one current

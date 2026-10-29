@@ -19,6 +19,12 @@ diff in the context of parent models, consumers, metadata, and local rules.
 - Do migrations or source cutovers avoid both overlap and gaps?
 - Is cross-system identity resolved before aggregation?
 
+- Is the production contract recorded, including required non-changes and approved
+  exceptions? Does the refactor preserve population, names, output coverage and
+  allocation unless a specific change is accepted?
+- Do timestamp types, upstream conversions and session settings explain date
+  behavior? Is changing the event date kept separate from changing timezone?
+
 ## Incremental and operational behavior
 
 - Does the unique key match the grain?
@@ -52,14 +58,14 @@ diff in the context of parent models, consumers, metadata, and local rules.
 
 - Are parse, compile, run, and test outcomes and actual scopes reported first,
   with failures, warnings, and skips distinguished? Did applicable linting run?
-- Were tests selected only for changed columns in directly changed models,
-  with any key checks limited to establishing a valid comparison?
+- Does the validation mode match the work and user request: full-row for
+  reporting refactors, targeted for focused fixes, static/reference for prose?
 - Were development and production validation reported separately?
 - Was development compared with production at the declared grain and over the
   same scope, with development-only, production-only, and changed rows
-  classified using selected-column equality rather than whole-row parity?
-- Were null rates, measure deltas, and edge cases checked only for the selected
-  columns, with unchanged-column profiling excluded?
+  classified with equality over every column selected by the mode?
+- Were null rates, measure deltas and edge cases checked for all selected
+  columns, including unchanged outputs in full-row refactor mode?
 - Was downstream model and column validation performed only when explicitly
   requested, and otherwise marked outside scope without blocking the pass?
 - Are unavailable checks disclosed instead of implied successful?
@@ -92,6 +98,13 @@ diff in the context of parent models, consumers, metadata, and local rules.
   in the rendered PR?
 - Are post-merge tasks limited to exceptional actions, with routine smoke
   testing and production-verification reminders omitted?
+
+- Does the description reflect the final code and actual production comparison,
+  with superseded alternatives and old-PR narratives removed?
+- Are reference values/formulas verified for their stated dates, and are test-only
+  diagnostics excluded from reporting source-of-truth guidance?
+- Were untouched formatting, aliases and CTE placement preserved, without replacing
+  explicit projections with table.* merely to reduce line count?
 
 ## Report findings
 
