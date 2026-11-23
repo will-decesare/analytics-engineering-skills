@@ -115,22 +115,21 @@ and compile into an isolated target path to confirm the resolved database and
 schema. Abort if resolution points at the default personal schema, production,
 or another task's namespace.
 
-Adjust selector syntax to local guidance. Clone the changed model's required
-ancestors or use deferral for dependencies so rebuilt refs resolve safely. A
-new model will not exist in production state, but its existing parents can
-still be cloned or deferred. Inspect graph selectors before execution because
-`+<changed-model>` may include substantially more lineage than intended; use a
-bounded depth or explicit list when appropriate.
+Resolve the [relation plan](full-validation.md#build-and-test-development)
+before cloning. A new model may lack production state while its parents remain
+available. Inspect graph selectors and use an explicit list when a leading `+`
+would include preserved archives or unrelated history.
 
 On adapters with zero-copy cloning, `dbt clone` can create inexpensive table
 clones. For unsupported relation types or platforms, it may create pointer
 views. Treat the target as writable development state in either case and keep
 the production source read-only.
 
-`dbt clone` does not replace relations that already exist in the target by
-default. Prefer a fresh task schema. Use `--full-refresh`, schema replacement,
-or another destructive refresh only when the repository requires it and the
-user authorizes the exact target.
+`dbt clone` skips existing target relations by default. When fresh inputs are
+authorized, verify replacement actually occurred and restrict replacement to
+the clone allowlist. Preserve initialized incremental tables and archive inputs;
+back up task-owned state before an authorized advancing-input replay. Do not
+replace a schema holding history that the test is intended to preserve.
 
 ## Build and test
 
