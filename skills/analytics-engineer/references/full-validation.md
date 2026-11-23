@@ -48,12 +48,16 @@ column allowlist is empty. This is separate from downstream data validation.
   paths. Confirm resolved relations before warehouse writes.
 - Tie the mode, column scope and results to the current commit and working-tree
   fingerprint. Re-evaluate the allowlist after a correction.
-- Use the same time and business predicates on development and production.
-  Record production baseline timestamps and any source-freshness differences.
-- Identify the baseline as actual production output/snapshot, production logic
-  evaluated on matched inputs, or an intermediate development result. Only the
-  first is a direct production-output comparison. Use matched-input replay to
-  isolate causes when needed; do not substitute it for end-to-end evidence.
+- Record exact baseline/candidate relations, code versions, input snapshots and
+  freshness, reporting cutoff/timezone, predicates, grain, and metric formulas.
+  Carry agreed definitions through follow-ups; distinguish customer counts from
+  subscription counts and acquisition events from deliveries.
+- Label actual production output, matched-input production-logic replay, and
+  intermediate development comparisons separately. Only the first is a direct
+  production-output comparison. Different snapshots can contain catalog changes
+  or intervening releases even before a shared cutoff; do not attribute their
+  entire delta to this PR. Use matched-input replay to isolate causes when
+  needed, retaining the actual production comparison and its limitations.
 - Document normalization, tolerances and nondeterministic-column exclusions.
   Preserve exact NULL/zero differences, array-order versus membership differences,
   and financial cent-rounding effects separately from aggregation noise.
@@ -70,31 +74,57 @@ For executable model changes, the normal path below applies; use read-only
 inline execution when no refresh/build is authorized. Never claim a materialized
 schema check or a dbt test run from a SELECT-only comparison.
 
-1. Parse the project, compile directly changed models, and lint modified files.
-   Record parse and compile outcomes separately; one does not prove the other.
-2. Clone or defer unchanged production parents needed to build those models.
-   Dependency preparation does not add those parents to the validation scope.
-3. Materialize only the named models in the isolated environment. Do not use a
-   trailing `+`, descendant selector, or full-project build by default.
-4. Select test nodes whose assertions target the mode's selected columns,
-   plus any minimal key checks required for comparison. Inspect
-   generic, singular, relationship, and unit tests for unrelated assertions.
-   Do not run a whole-model suite just because it is attached to that model.
-5. Verify selection with `dbt ls` or the manifest before execution. Avoid eager
-   indirect selection that pulls in out-of-scope columns or downstream tests.
+Resolve a relation plan separately from the model/column comparison allowlist:
 
-Prefer `dbt run` for the named models followed by `dbt test` with an explicit
+| Disposition | Treatment |
+| --- | --- |
+| Rebuild | Named outputs and necessary active parents/intervening consumers carrying candidate logic. |
+| Clone | Unchanged production inputs; replace existing clones only when fresh inputs are authorized. |
+| Preserve | Initialized incremental state, retained archives, and deprecated/stagnant relations unless explicitly selected for rebuilding. |
+| Defer | Unchanged refs safely resolved to the recorded production state; verify actual resolution. |
+
+Dependency preparation does not expand comparison scope. Trace the complete
+active path to the named output so partial builds cannot mix old and new
+logic. A graph selector alone does not justify rebuilding preserved history.
+
+1. Before cloning, resizing, or model execution, check pinned runtime and
+   adapter dependencies, command-specific flags, helper imports, configuration
+   paths, and expected selector output. Resolve models/tests with `dbt ls` or
+   the manifest and verify schemas/refs. Use a permitted read-only connection
+   check; keep runners self-contained rather than importing expired temp files.
+2. Parse, compile the rebuild selection, and lint modified files; record separate
+   outcomes. Prepare and materialize only the planned relations in isolation.
+3. Select assertions for the mode's columns and minimal comparison keys. Inspect
+   generic, singular, relationship, and unit tests to exclude unrelated checks
+   and unintended indirect selection. Do not default to descendant selectors,
+   whole-project builds, or whole-model test suites.
+
+For archive or incremental changes, reproduce the intended deployment inputs,
+including retained production history alongside refreshed candidate logic.
+Distinguish initialization/full refresh, same-input incremental replay,
+advancing-input replay, and corrections beyond the replay window. Run applicable
+scenarios only within authority; label unrun scenarios unverified. Check keys,
+continuity, opening state/balances, date advancement, and write bounds as relevant.
+A rebuilt archive fixture or full-refresh pass cannot establish these other paths.
+
+Prefer `dbt run` for the rebuild list followed by `dbt test` with an explicit
 list of relevant test nodes and `--indirect-selection empty` when supported by
 the project's version. A scoped `dbt build` is also acceptable if its resolved
 model and test list stays within the allowlist. If no relevant test nodes
 exist, use focused comparison queries; never fall back to the entire suite.
-Keep existing tests in the repository; select their execution according to the
-recorded mode and columns. See dbt's
+Do not delete tests merely to narrow execution; assess obsolete coverage under
+the [review checklist](review-checklist.md). See dbt's
 [indirect selection guidance](https://docs.getdbt.com/reference/global-configs/indirect-selection)
 when resolving test selection for the installed version.
 
-Stop after required checks pass; repeat or broaden only for a code change,
-failure, unresolved concern or explicit expanded request.
+Follow the execution mode and checkpoints in the handoff. Normal delivery may
+repair/retest affected work; single-attempt diagnostics stop at the specified
+failure without fixes or further model runs. Local-review/no-build modes do not
+authorize warehouse writes. Diagnose read-only within scope, then await review
+when required. Resume only after authorization and verifying completed stages
+still apply; do not repeat them by default. Restore and verify the agreed
+warehouse size after success, failure, or interruption when resizing was allowed.
+Stop once required checks pass; broaden only for a justified, authorized change.
 
 ## Compare changed columns
 
@@ -146,14 +176,12 @@ Use these fields, with names adapted to the model and business keys:
 | Example record key | A real, safe identifier belonging to that exact difference category. |
 | Example related entity key | The related order, customer, user, or other parent key from the same example record, when meaningful. |
 
-Choose impact measures that answer the business question at the declared
-grain. Examples include affected model rows, `count(distinct customer_id)`,
-`count(distinct user_id)`, distinct orders, or a monetary/quantity delta. Count
-stable comparison keys instead of multiplied join rows. Derive impact from
-the in-scope comparison; this format does not authorize unrelated column or
-downstream validation. For material measure changes, also retain production,
-development, and absolute/relative delta with units and window. A count of
-affected entities is not a substitute for the value of a material metric delta.
+Measure impact at the declared business grain using stable comparison keys,
+not multiplied join rows. Retain material production/development values and
+absolute/relative deltas as well as affected-entity counts. Derive prose, tables,
+and exports from the same verified result set; label each period explicitly
+(for example, one month versus all history) and reconcile category totals.
+This format does not authorize unrelated column or downstream validation.
 
 When showing a changed-record total, classify each comparison key once using
 documented precedence or combine overlapping memberships before counting.

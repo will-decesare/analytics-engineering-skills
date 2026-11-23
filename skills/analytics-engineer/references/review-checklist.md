@@ -39,9 +39,12 @@ diff in the context of parent models, consumers, metadata, and local rules.
 
 - Does the logic live at the earliest stable semantic owner?
 - Was moved logic integrated coherently rather than appended?
-- Are CTEs single-purpose, used, and named clearly?
-- Is the final step mostly assembly and projection?
+- Can redundant CTEs, joins, dependencies, or diagnostic fields be removed?
+- Are remaining CTEs used and clear, with final projection mostly assembly?
 - Does the SQL comply with local dialect and lint rules?
+- Does each test catch an independently plausible contract failure rather than
+  repeat its implementation? Remove obsolete coverage and documentation within
+  scope; retain meaningful invariants and defer unrelated cleanup.
 
 ## Contract completeness
 
@@ -56,62 +59,39 @@ diff in the context of parent models, consumers, metadata, and local rules.
 
 ## Validation evidence
 
-- Are parse, compile, run, and test outcomes and actual scopes reported first,
-  with failures, warnings, and skips distinguished? Did applicable linting run?
-- Does the validation mode match the work and user request: full-row for
-  reporting refactors, targeted for focused fixes, static/reference for prose?
-- Were development and production validation reported separately?
-- Was development compared with production at the declared grain and over the
-  same scope, with development-only, production-only, and changed rows
-  classified with equality over every column selected by the mode?
-- Were null rates, measure deltas and edge cases checked for all selected
-  columns, including unchanged outputs in full-row refactor mode?
-- Was downstream model and column validation performed only when explicitly
-  requested, and otherwise marked outside scope without blocking the pass?
-- Are unavailable checks disclosed instead of implied successful?
-- Are changed-column results and large key-metric differences shown in tables,
-  including causes and acceptance status? Are exact negligible accepted deltas
-  kept internally with a concise reason in the PR?
-- Are rounding/freshness explanations demonstrated? Did the user explicitly
-  accept logic-driven metric changes, and were uncertain decisions escalated
-  instead of treating a plausible explanation as approval?
-- Does the cause table compare development with actual production and include
-  Change, Description, Accepted? with a supported rationale, Impact in a defined
-  unit/aggregation, and verified example record/related-entity IDs?
-- Do cause counts reconcile at the stated grain, with overlapping distinct
-  customers/users totaled from their union rather than summed across causes?
-- Are unresolved associations distinguished from verified business-class
-  corrections, with acceptance supported by evidence and existing authority?
-- Are concise validation findings maintained in the original PR description,
-  with no separate validation comment unless explicitly requested?
-- Were unrelated PR-description content and reviewer edits preserved, with
-  commands, JSON, local paths, and provenance details kept in internal evidence?
+- Does the evidence satisfy [full-validation.md](full-validation.md) for the
+  requested mode, columns, baseline, and deployment scenarios?
+- Were comparison scope and relation preparation separated, preserving archives
+  and deprecated inputs while rebuilding the required active dependency path?
+- Do tested fixtures reproduce the production history that deployment will read?
+- After integrating child PRs or base changes, was affected evidence renewed
+  for the combined state rather than combining unrelated passes?
+- Are metric definitions, periods, prose, tables, and exports consistent, with
+  causes reconciled and snapshot/release differences distinguished from PR logic?
+- Were explicit stop/review, no-refresh, retry, and warehouse constraints honored?
+- Are unrun checks disclosed and acceptance decisions supported, including the
+  distinction between unresolved associations and verified business corrections?
 
 ## PR preparation
 
-- Does Description and Motivation explain why the change is needed using the
-  ticket or user response? Was missing motivation asked for rather than invented?
-- Does the pre-merge list contain only unresolved release coordination, with
-  actual validation blockers kept visible in the validation section?
-- For DAG changes, were both real dbt Docs sites generated and served, their
-  DAGs captured and inspected, and the Before/After dropdown images verified
-  in the rendered PR?
-- Are post-merge tasks limited to exceptional actions, with routine smoke
-  testing and production-verification reminders omitted?
-
-- Does the description reflect the final code and actual production comparison,
-  with superseded alternatives and old-PR narratives removed?
-- Are reference values/formulas verified for their stated dates, and are test-only
-  diagnostics excluded from reporting source-of-truth guidance?
-- Were untouched formatting, aliases and CTE placement preserved, without replacing
-  explicit projections with table.* merely to reduce line count?
+- Does the final description follow [pull-request-workflow.md](pull-request-workflow.md):
+  sourced motivation, current scoped evidence, required rendered
+  DAG images, accepted differences, and actionable release work?
+- Were superseded alternatives, investigation narrative, and explanations of
+  unchanged behavior removed while preserving reviewer edits and limitations?
+- Are local edits accessible on the intended named branch, with the absolute
+  worktree path reported? Were untouched formatting and explicit projections
+  preserved rather than changing them merely to reduce line count?
 
 ## Report findings
 
-- Report only actionable findings caused or exposed by the change.
-- Order findings by severity and include a precise file and line location.
-- State the violated invariant, a concrete failure scenario, and the likely
-  impact.
-- Recommend the smallest safe correction without expanding the user's scope.
+- Before expanding implementation, classify findings as introduced, inherited,
+  or exposed by the change. Quantify observed affected records and business
+  impact where feasible; label zero observed impact, unknown coverage, and
+  hypothetical failure scenarios distinctly. Zero observed impact alone neither
+  proves safety nor justifies speculative fallback logic.
+- Give severity, precise file/line, violated invariant, evidence, and disposition:
+  fix now, defer, or dismiss, with rationale and any required acceptance.
+- Recommend the smallest correction; keep unrelated preventive work separate.
 - If no actionable issues remain, say so and identify any residual validation
   gaps.

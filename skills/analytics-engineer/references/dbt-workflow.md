@@ -68,11 +68,12 @@ current with the remote. Apply this independently in every affected repository
    equals that tip before editing. Record remote, base, fetch time, comparison
    outcome, and starting commit in the internal Developer Handoff Packet.
 
-Repeat the fetch/check for each new branch, but do not recreate or reset an
-existing feature branch when resuming work. This preflight does not authorize
-rebasing, merging, or refreshing already-tested feature code; such changes
-must follow the normal authorization and revalidation workflow. Keep branch
-provenance details out of routine PR comments.
+For an existing PR, resolve its named branch and worktree before editing and
+reuse a suitable checkout. Do not recreate or reset it. If isolation is needed,
+make the edits reviewable on the intended branch before handoff without
+committing or overwriting unrelated work. Report the absolute checkout path;
+uncommitted edits on a detached HEAD are not edits on the named branch.
+This preflight does not authorize merging or rebasing tested feature code.
 
 ## Design the change
 
@@ -126,39 +127,12 @@ they ran. Documentation-only work does not require this build ladder.
 
 ### Development validation
 
-1. Parse the project, compile the changed selector, and lint modified SQL and
-   YAML. Record separate parse/compile outcomes and their actual scopes.
-2. Preserve a readable production baseline for each changed model. Clone or
-   defer unchanged parents into the task-specific development environment;
-   materialize only the named models. Additional parent builds require their
-   own justified, authorized scope; do not refresh unchanged upstream history.
-3. Run test nodes asserting the mode's selected columns. Inspect the resolved
-   selector to avoid out-of-scope columns and downstream tests. Prefer
-   separate model runs and explicitly selected tests over a whole-model suite.
-4. Compare the development relation with the current production relation at
-   the model's declared unique key:
-   - limit both sides to the same time and business scope;
-   - compare all mode-selected columns with null-safe equality;
-   - use explicit tolerances only for columns whose numeric behavior warrants
-     them;
-   - exclude or normalize nondeterministic audit columns deliberately;
-   - use a full outer join to classify development-only, production-only,
-     changed, and matching keys over all columns selected by the mode;
-   - report category counts and inspect representative rows from each material
-     difference class.
-5. Use row counts and key uniqueness as needed to support a valid comparison.
-   Check null rates and measures only for selected columns. Validate added
-   columns separately when they have no production analogue.
-6. Build or data-test downstream models, columns, or BI consumers only when
-   explicitly requested. Otherwise record them as outside data-validation
-   scope; this does not exclude required reporting-deprecation impact checks.
-
-A comparison need not produce zero differences. Follow
-[difference acceptance](full-validation.md#accept-or-escalate-differences):
-demonstrate rounding/freshness causes, obtain explicit user acceptance for
-logic-driven metric changes, and ask when uncertain. An explained difference
-is not automatically accepted. Avoid comparing a development-only rolling
-window with full production history; apply the same predicate to both relations.
+Follow [full-validation.md](full-validation.md#build-and-test-development) for
+relation preparation, runtime preflight, scoped execution, deployment scenarios,
+and row-keyed comparisons. Keep the relation plan distinct from the comparison
+allowlist. Use the recorded baseline and metric definitions throughout repairs;
+apply [difference acceptance](full-validation.md#accept-or-escalate-differences)
+before declaring a pass. An explained difference is not automatically accepted.
 
 ### Production validation
 
@@ -201,6 +175,8 @@ When deleting or deprecating a model:
 
 ## Prepare a reviewable handoff
 
+- Apply [review-checklist.md](review-checklist.md) before handoff: classify
+  review findings and remove work that no longer supports the final objective.
 - Explain why the chosen layer owns the logic and how grain is preserved.
 - Describe compatibility, backfill, migration-boundary, and downstream BI
   effects.

@@ -20,30 +20,35 @@ Every packet must include:
 
 - workflow or ticket identifier and link when available;
 - iteration number;
-- repository, branch, worktree, and intended base branch;
+- repository, named branch, absolute worktree path, and intended base branch;
 - current commit SHA plus a fingerprint of staged and unstaged changes;
 - isolated schema names and dbt artifact/log paths;
-- work type, validation mode, model-to-column scope and reason for inclusions;
+- work type, validation mode and comparison model/column allowlist; separately,
+  the relation plan (rebuild/clone/preserve/defer) and reasons for inclusions;
 - production contract, required non-changes and specifically approved exceptions;
-- baseline kind (actual production, matched-input replay or intermediate result),
-  source freshness/cutoff, date/timezone basis and execution method (materialized,
-  read-only inline candidate or static checks);
+- comparison record under [full-validation.md](full-validation.md#protect-the-comparison),
+  including baseline kind, exact relations/code/inputs, freshness, reporting
+  window, grain, metric formulas, and execution method;
 - explicit downstream data-validation request and its model/column scope, or
   `not requested; not performed`;
 - reporting-deprecation impact scope and check status, or `not applicable`,
   separate from optional downstream data validation;
 - authority already granted for commits, pushes, PR creation/description
   updates, explicitly requested comments, and cleanup;
-- packet author role and timestamp.
+- execution mode (normal delivery, diagnostic single attempt, local review, or
+  read-only), allowed mutations/refreshes, stop/review conditions and retry scope;
+- completed stages and evidence, next/resume point, and warehouse resize limits
+  and required restoration; preserve these across handoffs and follow-ups;
+- packet author role and timestamp;
 - requested model tier, resolved model ID and supported reasoning effort,
   selection basis, actual settings when exposed (otherwise `not exposed`),
   and any model fallback or escalation with its reason.
 
-Executable or contract changes require renewed affected checks. For prose-only
-changes, attach a compact applicability attestation to the new fingerprint:
-which executable definitions remain identical, which reference queries were
-rechecked if needed, and which evidence still applies. Do not relabel old output
-as a new run. Extend the existing packets; do not create another handoff layer.
+Update this state in place. Executable/contract changes renew affected checks;
+substantial merges require reassessing the integrated diff and deployment path.
+For prose-only changes, record unchanged executable definitions, any rechecked
+recipes/values, and evidence still applicable. Do not relabel old output as a
+new run or add another handoff layer.
 
 For delegated routine evidence, include the worker's assignment, fingerprint,
 exact sources/commands, timestamps, scope and coverage, results, artifact paths,
@@ -72,7 +77,8 @@ Include:
 - retiring reporting dependencies, exact BI identifiers/mappings, known live
   consumers, and proposed replacements for the required API impact check;
 - developer commands and outcomes;
-- known risks, assumptions, unavailable checks, and post-merge work.
+- review dispositions under [review-checklist.md](review-checklist.md#report-findings),
+  known risks, unavailable checks, and post-merge work;
 - for DAG changes, the before/base revision or preserved docs location and the
   affected nodes to capture under [dag-screenshots.md](dag-screenshots.md).
 
@@ -91,11 +97,12 @@ Include:
 - in-scope effect and severity; downstream data results only when requested;
 - for reporting deprecations, live impacted assets and unresolved breakage;
 - relevant log or artifact path;
-- smallest actionable correction, without editing the developer's code.
+- failure class (runner/environment, stale dependency, implementation, or
+  unresolved acceptance), smallest correction, and last completed stage;
+  do not edit implementation or advance a stopped sequence.
 
-Address it to the analytics-engineer coordinator. The coordinator routes it to
-the developer, which must acknowledge it, increment the iteration after a fix,
-issue a new fingerprint, and return a new Developer Handoff Packet.
+Return to the coordinator, which applies the recorded repair/review conditions.
+An authorized repair needs a new fingerprint and Developer Handoff Packet.
 
 ## Tester Pass Packet
 
@@ -104,8 +111,8 @@ Include:
 - status `PASS` and tested fingerprint;
 - exact parse, compile, lint, clone/defer, run/build, and test commands and
   separate outcomes, model scopes, and failure/warning/skip counts;
-- production baseline timestamp and identical comparison scope;
-- directly changed models and the tested column allowlist;
+- applicable deployment scenarios, results and unverified paths, including
+  retained archive inputs and incremental write-bound checks when relevant;
 - row keys and development-only, production-only, changed, and matching rows,
   with matching defined only over the selected comparable columns;
 - schema checks for selected added, removed, renamed, or retyped columns;
@@ -174,20 +181,6 @@ user that the PR is ready for review only when the PR actually exists, the body
 has been verified, and all actions required by the authorized scope are
 complete.
 
-## Coordination rules
-
-- Keep the developer as the only role that edits implementation code.
-- Keep the tester read-only with respect to the implementation and PR state.
-- Let the analytics-engineer coordinator start every specialist and retain the
-  current ticket, fingerprint, validation result, and authorization scope.
-- Start the deployer only after the coordinator receives a current `PASS`.
-- Evaluate that pass against the recorded validation mode and column scope.
-  Excluding out-of-scope columns and unrequested descendants does not invalidate
-  a pass; omitting required all-column checks in refactor mode does.
-  Required live reporting-deprecation impact checks remain part of the gate,
-  including when a ticket has no changed-column data comparisons.
-- On tester failure, have the coordinator return the packet to development and
-  repeat until pass or a genuine blocker requires user input.
-- Avoid simultaneous writes to one worktree or dbt artifact directory.
-- Report unavailable evidence and stale state; never fill packet fields with
-  assumptions.
+Role boundaries and routing are defined in [SKILL.md](../SKILL.md#preserve-role-boundaries).
+Report missing evidence or stale state rather than filling packet fields with
+assumptions.

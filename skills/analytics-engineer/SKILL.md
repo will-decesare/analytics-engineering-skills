@@ -21,10 +21,10 @@ integrity, and explicit authority for external actions.
   description with its validation summary and the authorized draft pull
   request, or update that same description when the PR already exists.
 
-As quarterback, retain ownership of the ticket, current code fingerprint,
-validation status, authorization scope, and next role. Start each specialist,
-receive every handoff, and route the next action without requiring the user to
-coordinate agents.
+Own the ticket, code and environment identity, execution constraints, validation
+status, and next role in the existing [handoffs](references/agent-handoffs.md).
+Carry decisions and completed stages across agents and follow-ups; the user
+should not have to reconstruct state or relay routine handoffs.
 
 ## Preserve the reporting contract
 
@@ -61,19 +61,17 @@ while continuing independent investigation. Do not invent a rationale or treat
 an implementation description as motivation. Carry the answer into the
 developer handoff and PR's Description and Motivation section.
 
-1. Read the work ticket and repository instructions, establish the workflow
-   identity and authorization scope, then start a separate agent using
-   `$analytics-developer`. Require the developer to complete the
-   [branch preflight](references/dbt-workflow.md#start-from-current-remote-main)
-   before creating a branch or worktree from a production base: fetch remote
-   `main`, compare the local base, and start from the verified current tip.
+1. Read the ticket and repository instructions; establish scope, execution mode,
+   stop conditions, and authority. Start a separate `$analytics-developer` using
+   the [branch guidance](references/dbt-workflow.md#start-from-current-remote-main):
+   reuse the intended PR checkout, or verify current remote code for a new branch.
 2. Receive the Developer Handoff Packet, verify its code fingerprint and
-   `READY_FOR_TEST` state, and record the model/changed-column allowlist before
-   starting a separate `$analytics-tester` agent.
+   `READY_FOR_TEST` state, and record the comparison scope separately from the
+   relation preparation plan before starting a separate `$analytics-tester`.
 3. Have the tester validate the isolated development state against production
-   for the recorded mode and column scope, respecting any no-refresh constraint. Do not
-   validate downstream data unless the user explicitly requests it. For
-   reporting deprecations, also require the live content-impact check below.
+   under [full-validation.md](references/full-validation.md), including applicable
+   deployment scenarios within the authorized scope. Preserve the user's
+   no-refresh, single-attempt, stop/review, and warehouse constraints.
 4. Require schema and row-keyed value comparisons for the selected columns.
    Reporting refactors default to all-column comparisons in directly changed
    models; focused fixes use changed outputs. Keep unrelated tests out of scope.
@@ -81,8 +79,9 @@ developer handoff and PR's Description and Motivation section.
    accepted by the user, ask with the observed impact and proposed explanation.
    Continue independent work, but keep the affected validation gate unresolved.
 5. On `FAIL`, receive the Tester Failure Packet and route it to the developer.
-   After the fix, require a new fingerprint and retest the updated allowlist.
-   Repeat until `PASS` or a genuine blocker needs user input.
+   Repair and retest only when the execution mode permits; otherwise report the
+   cause and recommendation and await review. Resume from verified completed
+   stages when authorized, renewing only affected evidence.
 6. On `PASS`, verify the Tester Pass Packet matches the current fingerprint,
    then start a separate agent using `$analytics-deployer` and supply both the
    developer and tester packets.
@@ -94,14 +93,11 @@ developer handoff and PR's Description and Motivation section.
 8. Report the completed authorized actions and remaining limitations. Ask about
    exact schema cleanup only when no retention decision is already on record.
 
-Read [agent-handoffs.md](references/agent-handoffs.md) for the required packets
-and communication protocol.
-
-Read [full-validation.md](references/full-validation.md) to resolve scope.
-"Full validation" completes the recorded mode: all comparable columns for
-reporting refactors, changed outputs for focused fixes, and scoped static or
-reference-query checks for documentation. Record unrequested downstream work
-as excluded by scope, not incomplete validation or a reason to block a PR.
+After integrating substantial child-PR or base-branch changes, reassess the
+combined diff, dependencies, deployment path, and affected evidence. Separate
+passing checks do not establish an integrated pass. Before handoff, use the
+[review checklist](references/review-checklist.md) to quantify findings and
+remove unnecessary code, tests, dependencies, and documentation within scope.
 
 For reporting dependency deprecations, read
 [reporting-impact.md](references/reporting-impact.md). Have the developer map
@@ -111,21 +107,11 @@ dependency check does not authorize downstream data testing or content changes.
 Resolve unknown access/coverage and unaddressed breakage before accepting a
 retirement pass; do not waive the check merely because validation is light.
 
-Keep fingerprint verification and detailed evidence in internal handoffs.
-Require the deployer to maintain one concise validation summary in the original
-PR description, preserving unrelated content. New results, retests, and
-reporting-impact findings update that section in place; do not post separate
-"Validation update" comments unless the user explicitly requests a comment.
-Lead with parse/compile/run/test outcomes, then require production-comparison
-tables following [the cause-based format](references/full-validation.md#explain-differences-by-cause).
-Each cause needs its description, acceptance rationale, quantified impact in
-the relevant unit, and verified record/related-entity example IDs. Preserve
-material metric values and deltas as well as counts of affected entities.
-Only report downstream execution when explicitly requested and actually run.
-For DAG changes, require real before/after dbt Docs screenshots under
-[dag-screenshots.md](references/dag-screenshots.md).
-Exclude command dumps, JSON artifacts, hashes, and code-provenance narration
-from reviewer-facing text unless explicitly requested.
+Keep detailed evidence internal. The deployer follows
+[pull-request-workflow.md](references/pull-request-workflow.md) to maintain the
+original description with current outcomes, reconciled comparisons, acceptance
+decisions, and required DAG images. Preserve unrelated reviewer content; do not
+post separate validation comments unless requested.
 
 ## Preserve role boundaries
 
@@ -134,10 +120,7 @@ from reviewer-facing text unless explicitly requested.
   PR state.
 - Do not let the deployer proceed without a tester `PASS` tied to the current
   code fingerprint.
-- Require every specialist to return its packet to the coordinator. The
-  coordinator starts or re-engages the next role and maintains workflow state.
-- Communicate directly with specialists when collaboration tools are
-  available; do not require the user to relay normal handoffs.
+- Start or re-engage each specialist and receive its packet directly.
 - Avoid concurrent writes to the same worktree, schema, target directory, or
   log directory.
 - If separate agents are unavailable, execute the roles sequentially with
